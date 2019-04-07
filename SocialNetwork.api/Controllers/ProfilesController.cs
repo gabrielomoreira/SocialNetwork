@@ -11,19 +11,28 @@ using SocialNetwork.data.Repositories;
 
 namespace SocialNetwork.api.Controllers
 {
-    [Authorize]
-    [RoutePrefix("api/Account")]
+    //[Authorize]
+    [RoutePrefix("api/Profiles")]
     public class ProfilesController : ApiController
     {
         private ProfileRepositoryAsync _repository;
-        //private DataContext db = new DataContext();
         private ProfilesController()
         {
-            _repository = new ProfileRepositoryAsync();
+            try
+            {
+                _repository = new ProfileRepositoryAsync();
+            }
+            catch(Exception e)
+            {
+                Console.Write(e.Message);
+            }
         }
 
         // GET: api/Profiles
-        public async Task<List<Profile>> GetProfilesAsync()
+        [AllowAnonymous]
+        [HttpGet]
+        [Route("getAll")]
+        public async Task<ICollection<Profile>> GetProfilesAsync()
         {
             ICollection<Profile> profiles = await _repository.GetAllAsync();
             if (profiles == null)
@@ -34,8 +43,10 @@ namespace SocialNetwork.api.Controllers
         }
 
         // GET: api/Profiles/5
-        [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> GetProfile(int id)
+        //[ResponseType(typeof(Profile))]
+        [HttpGet]
+        [Route("get/{id:int}")]
+        public async Task<IHttpActionResult> GetProfileAsync(int id)
         {
             try
             {
@@ -55,8 +66,10 @@ namespace SocialNetwork.api.Controllers
         }
 
         // PUT: api/Profiles/5
+        [HttpPut]
+        [Route("update")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> PutProfile(Profile profile)
+        public async Task<IHttpActionResult> UpdateProfileAsync(Profile profile)
         {
             if (!ModelState.IsValid)
             {
@@ -85,8 +98,10 @@ namespace SocialNetwork.api.Controllers
         }
 
         // POST: api/Profiles
+        [HttpPost]
+        [Route("create")]
         [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> PostProfile(Profile profile)
+        public async Task<IHttpActionResult> CreateProfileAsync(Profile profile)
         {
             if (!ModelState.IsValid)
             {
@@ -105,8 +120,10 @@ namespace SocialNetwork.api.Controllers
         }
 
         // DELETE: api/Profiles/5
+        [HttpDelete]
+        [Route("delete")]
         [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> DeleteProfile(int id)
+        public async Task<IHttpActionResult> DeleteProfileAsync(int id)
         {
             try
             {

@@ -35,7 +35,7 @@ namespace SocialNetwork.web.Controllers
 
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Login");
+                    return RedirectToAction("Index", Profile);
                 }
                 return View(model);
             }
@@ -77,9 +77,8 @@ namespace SocialNetwork.web.Controllers
                         var responseContent = await response.Content.ReadAsStringAsync();
                         var tokenData = JObject.Parse(responseContent);
 
-                        Session.Add("access_token", tokenData["acess_token"]);
-
-                        return RedirectToAction("Index", "Home");
+                        Session.Add("access_token", tokenData["access_token"]);
+                        return RedirectToAction("Index", "Profiles");
                     }
                     return View(model);
                 }

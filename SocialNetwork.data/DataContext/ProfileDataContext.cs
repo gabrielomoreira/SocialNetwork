@@ -9,5 +9,9 @@ namespace SocialNetwork.data.ProfileDataContext
 
         public DbSet<Profile> Profiles { get; set; }
 
+        public static DataContext Create()
+        {
+            return new DataContext();
+        }
     }
 }
