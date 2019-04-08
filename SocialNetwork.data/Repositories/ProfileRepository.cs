@@ -51,6 +51,11 @@ namespace SocialNetwork.data.Repositories
             return await _dataContextAsync.Profiles.FindAsync(id);
         }
 
+        public async Task<Profile> GetByIDAccountAsync(string AccountID)
+        {
+            return await _dataContextAsync.Profiles.Where(p => p.AccountId == AccountID).SingleOrDefaultAsync();
+        }
+
         public async Task UpdateAsync(Profile profile)
         {
             try

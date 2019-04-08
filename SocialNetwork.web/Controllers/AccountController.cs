@@ -32,10 +32,10 @@ namespace SocialNetwork.web.Controllers
                 client.BaseAddress = UriAccount;
 
                 var response = await client.PostAsJsonAsync("api/Account/Register", model);
-
+                string acess_token = Session["access_token"]?.ToString();
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Index", Profile);
+                    return RedirectToAction("Create", "Profiles", null);
                 }
                 return View(model);
             }
@@ -78,7 +78,7 @@ namespace SocialNetwork.web.Controllers
                         var tokenData = JObject.Parse(responseContent);
 
                         Session.Add("access_token", tokenData["access_token"]);
-                        return RedirectToAction("Index", "Profiles");
+                        return RedirectToAction("Create", "Profiles");
                     }
                     return View(model);
                 }

@@ -1,17 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity.Infrastructure;
+using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using Microsoft.Azure;
+using Microsoft.WindowsAzure.Storage;
+using Microsoft.WindowsAzure.Storage.Blob;
+using Newtonsoft.Json;
 using SocialNetwork.core.Models;
 using SocialNetwork.data.Repositories;
 
 namespace SocialNetwork.api.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [RoutePrefix("api/Profiles")]
     public class ProfilesController : ApiController
     {
@@ -29,9 +35,9 @@ namespace SocialNetwork.api.Controllers
         }
 
         // GET: api/Profiles
-        [AllowAnonymous]
         [HttpGet]
         [Route("getAll")]
+        [AllowAnonymous]
         public async Task<ICollection<Profile>> GetProfilesAsync()
         {
             ICollection<Profile> profiles = await _repository.GetAllAsync();
@@ -42,15 +48,14 @@ namespace SocialNetwork.api.Controllers
             return profiles.ToList();
         }
 
-        // GET: api/Profiles/5
-        //[ResponseType(typeof(Profile))]
+        // GET: api/Profiles/getByIdAccount/5
         [HttpGet]
-        [Route("get/{id:int}")]
-        public async Task<IHttpActionResult> GetProfileAsync(int id)
+        [Route("getAccount")]
+        public async Task<IHttpActionResult> GetProfileAsync(string AccountId)
         {
             try
             {
-                Profile profile = await _repository.GetByIDAsync(id);
+                Profile profile = await _repository.GetByIDAccountAsync(AccountId);
                 if (profile == null)
                 {
                     return NotFound();
@@ -65,25 +70,80 @@ namespace SocialNetwork.api.Controllers
 
         }
 
-        // PUT: api/Profiles/5
-        [HttpPut]
-        [Route("update")]
-        [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> UpdateProfileAsync(Profile profile)
+        // POST: api/Profiles
+        [HttpPost]
+        [Route("create")]
+        [ResponseType(typeof(Profile))]
+        public async Task<IHttpActionResult> CreateProfileAsync(Profile profile)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
             try
             {
+                if (!Request.Content.IsMimeMultipartContent())
+                {
+                    return BadRequest();
+                }
+                var result = await Request.Content.ReadAsMultipartAsync();
+
+                var requestJson = await result.Contents[0].ReadAsStringAsync();
+                var model = JsonConvert.DeserializeObject<Profile>(requestJson);
+
+                /*if (result.Contents.Count > 1)
+                {
+                    model.PictureUrl = await CreateBlobAsync(result.Contents[1]);
+                }*/
+
+                var newProfile = new Profile()
+                {
+                    FirstName = model.FirstName,
+                    LastName = model.LastName,
+                    BirthDate = model.BirthDate,
+                    PictureUrl = model.PictureUrl/*,
+                    AccountId = model.AccountId*/
+                };
+
+                await _repository.CreateAsync(newProfile);
+
+                return Ok(newProfile);
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.Message);
+                return StatusCode(HttpStatusCode.InternalServerError);
+            }
+            
+            
+        }
+
+        // PUT: api/Profiles/5
+        [HttpPut]
+        [Route("Update/{id:int}")]
+        [ResponseType(typeof(void))]
+        public async Task<IHttpActionResult> UpdateProfileAsync(int id)
+        {
+            Profile profile = null;
+            try
+            {
+                if (!Request.Content.IsMimeMultipartContent())
+                {
+                    return BadRequest();
+                }
+                var result = await Request.Content.ReadAsMultipartAsync();
+
+                var requestJson = await result.Contents[0].ReadAsStringAsync();
+                profile = JsonConvert.DeserializeObject<Profile>(requestJson);
+
+                /*if (result.Contents.Count > 1)
+                {
+                    model.PictureUrl = await CreateBlobAsync(result.Contents[1]);
+                }*/
                 await _repository.UpdateAsync(profile);
+
+                return Ok(profile);
             }
             catch (DbUpdateConcurrencyException e)
             {
                 Console.Write(e.Message);
-                if (_repository.ProfileExists(profile.Id))
+                if ((profile != null) && _repository.ProfileExists(profile.Id))
                 {
                     return StatusCode(HttpStatusCode.Conflict);
                 }
@@ -93,30 +153,7 @@ namespace SocialNetwork.api.Controllers
             {
                 return InternalError(e);
             }
-
-            return StatusCode(HttpStatusCode.NoContent);
-        }
-
-        // POST: api/Profiles
-        [HttpPost]
-        [Route("create")]
-        [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> CreateProfileAsync(Profile profile)
-        {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            try
-            {
-                await _repository.CreateAsync(profile);
-                return StatusCode(HttpStatusCode.NoContent);
-            }
-            catch (Exception e)
-            {
-                return InternalError(e);
-            }
+            
         }
 
         // DELETE: api/Profiles/5
@@ -138,11 +175,42 @@ namespace SocialNetwork.api.Controllers
         }
 
 
-        //helper
+        //helpers
         private IHttpActionResult InternalError(Exception e)
         {
             Console.Write(e.Message);
             return StatusCode(HttpStatusCode.InternalServerError);
+        }
+
+        private async Task<string> CreateBlobAsync(HttpContent httpContent)
+        {
+            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+
+            var blobContainerName = "socialNetwork-picture";
+            var blobClient = storageAccount.CreateCloudBlobClient();
+            var blobContainer = blobClient.GetContainerReference(blobContainerName);
+            await blobContainer.CreateIfNotExistsAsync();
+
+            await blobContainer.SetPermissionsAsync(
+                new BlobContainerPermissions
+                {
+                    PublicAccess = BlobContainerPublicAccessType.Blob
+                }
+            );
+
+            var fileName = httpContent.Headers.ContentDisposition.FileName;
+            var byteArray = await httpContent.ReadAsByteArrayAsync();
+
+            var blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(fileName));
+            await blob.UploadFromByteArrayAsync(byteArray, 0, byteArray.Length);
+
+            return blob.Uri.AbsoluteUri;
+        }
+
+        private string GetRandomBlobName(string fileName)
+        {
+            string ext = Path.GetExtension(fileName);
+            return string.Format("{0:10}_{1}{2}", DateTime.Now.Ticks, Guid.NewGuid(), ext);
         }
 
         /*protected override void Dispose(bool disposing)
