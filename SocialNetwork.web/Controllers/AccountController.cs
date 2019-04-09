@@ -85,5 +85,49 @@ namespace SocialNetwork.web.Controllers
             }
 
         }
+
+        [HttpGet]
+        public ActionResult Logout()
+        {
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> Logout(LoginViewModel model)
+        {
+            try
+            {
+                var data = new Dictionary<string, string>
+            {
+                {"grant_type", "password" },
+                {"username", model.Email },
+                {"password", model.Password }
+            };
+
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = UriAccount;
+                    client.DefaultRequestHeaders.Accept.Clear();
+
+                    using (var requestContent = new FormUrlEncodedContent(data))
+                    {
+                        var response = await client.PostAsync("api/Account/Logout", null);
+
+                        if (response.IsSuccessStatusCode)
+                        {
+                            return RedirectToAction("Login", "Account");
+                        }
+                        return View("Error");
+                    }
+                }
+            }
+            catch
+            {
+                return View("Error");
+            }
+
+        }
+
     }
 }

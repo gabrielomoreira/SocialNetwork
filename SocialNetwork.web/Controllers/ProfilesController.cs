@@ -163,67 +163,141 @@ namespace SocialNetwork.web.Controllers
             }
             return View(profile);
         }
-
+        */
         
 
         // GET: Profiles/Edit/5
-        public async Task<ActionResult> Edit(int? id)
+        [HttpGet]
+        public ActionResult Update(ProfileViewModel model)
         {
-            if (id == null)
+            if (!ModelState.IsValid)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Profile profile = await db.Profiles.FindAsync(id);
-            if (profile == null)
-            {
-                return HttpNotFound();
-            }
-            return View(profile);
+            return View(model);
         }
 
         // POST: Profiles/Edit/5
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        [HttpPost]
+        [HttpPost, ActionName("Update")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Edit([Bind(Include = "Id,FirstName,LastName,BirthDate,PictureUrl,AccountId")] Profile profile)
+        public async Task<ActionResult> UpdateAction(ProfileViewModel model)
         {
-            if (ModelState.IsValid)
-            {
-                db.Entry(profile).State = EntityState.Modified;
-                await db.SaveChangesAsync();
-                return RedirectToAction("Index");
-            }
-            return View(profile);
-        }
-
-        // GET: Profiles/Delete/5
-        public async Task<ActionResult> Delete(int? id)
-        {
-            if (id == null)
+            if (!ModelState.IsValid)
             {
                 return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
             }
-            Profile profile = await db.Profiles.FindAsync(id);
-            if (profile == null)
+
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
             {
-                return HttpNotFound();
+                return RedirectToAction("Login", "Acount");
             }
-            return View(profile);
+
+            using (var client = new HttpClient())
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    client.BaseAddress = UriAccount;
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+
+                    content.Add(new StringContent(JsonConvert.SerializeObject(model)));
+
+                    if (Request.Files.Count > 0)
+                    {
+                        byte[] fileBytes;
+
+                        using (var inputStream = Request.Files[0].InputStream)
+                        {
+                            var memoryStream = inputStream as MemoryStream;
+
+                            if (memoryStream == null)
+                            {
+                                memoryStream = new MemoryStream();
+                                inputStream.CopyTo(memoryStream);
+                            }
+
+                            fileBytes = memoryStream.ToArray();
+                        }
+                        var fileContent = new ByteArrayContent(fileBytes);
+                        fileContent.Headers.ContentDisposition = new ContentDispositionHeaderValue("attachment")
+                        {
+                            FileName = Request.Files[0].FileName.Split('\\').Last()
+                        };
+
+                        content.Add(fileContent);
+
+                    }
+
+                    var response = await client.PutAsync("api/Profiles/Update", content);
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    ProfileViewModel profile = JsonConvert.DeserializeObject<ProfileViewModel>(responseContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Details", "Profile");
+                    }
+                    else
+                    {
+                        return View("Error");
+                    }
+
+                }
+            }
+
+
+        }
+
+        // GET: Profiles/Delete/5
+        public ActionResult Delete(ProfileViewModel model)
+        {
+            if (!ModelState.IsValid)
+            {
+                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
+            }
+            return View(model);
         }
 
         // POST: Profiles/Delete/5
         [HttpPost, ActionName("Delete")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> DeleteConfirmed(int id)
+        public async Task<ActionResult> DeleteAction(int id)
         {
-            Profile profile = await db.Profiles.FindAsync(id);
-            db.Profiles.Remove(profile);
-            await db.SaveChangesAsync();
-            return RedirectToAction("Index");
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Login", "Acount");
+            }
+
+            using (var client = new HttpClient())
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    client.BaseAddress = UriAccount;
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+
+                    var response = await client.DeleteAsync("api/Profiles/Delete");
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Logout", "Account");
+                    }
+                    else
+                    {
+                        return View("Error");
+                    }
+
+                }
+            }
         }
         
-        protected override void Dispose(bool disposing)
+        /*protected override void Dispose(bool disposing)
         {
             if (disposing)
             {

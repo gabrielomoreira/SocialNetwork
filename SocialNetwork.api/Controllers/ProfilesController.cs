@@ -116,10 +116,11 @@ namespace SocialNetwork.api.Controllers
 
         // PUT: api/Profiles/5
         [HttpPut]
-        [Route("Update/{id:int}")]
+        [Route("Update")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> UpdateProfileAsync(int id)
+        public async Task<IHttpActionResult> UpdateProfileAsync()
         {
+            var accountId = User.Identity.GetUserId();
             Profile profile = null;
             try
             {
