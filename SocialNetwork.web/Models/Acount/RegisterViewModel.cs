@@ -1,8 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SocialNetwork.web.Models
+namespace SocialNetwork.web.Models.Account
 {
-    public class LoginViewModel
+    public class RegisterViewModel
     {
         [Required]
         [Display(Name = "Email")]
@@ -13,5 +13,10 @@ namespace SocialNetwork.web.Models
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; }
+
+        [Required]
+        [DataType(DataType.Password)]
+        [Display(Name = "ConfirmPassword")]
+        public string ConfirmPassword { get; set; }
     }
 }

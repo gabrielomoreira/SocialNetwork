@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Description;
+using Microsoft.AspNet.Identity;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
@@ -50,16 +51,13 @@ namespace SocialNetwork.api.Controllers
 
         // GET: api/Profiles/getByIdAccount/5
         [HttpGet]
-        [Route("getAccount")]
-        public async Task<IHttpActionResult> GetProfileAsync(string AccountId)
+        [Route("getProfileByAccount")]
+        public async Task<IHttpActionResult> GetProfileByIdAsync()
         {
             try
             {
-                Profile profile = await _repository.GetByIDAccountAsync(AccountId);
-                if (profile == null)
-                {
-                    return NotFound();
-                }
+                var accountId = User.Identity.GetUserId();
+                Profile profile = await _repository.GetByIDAccountAsync(accountId);
 
                 return Ok(profile);
             }
@@ -72,16 +70,18 @@ namespace SocialNetwork.api.Controllers
 
         // POST: api/Profiles
         [HttpPost]
-        [Route("create")]
+        [Route("Create")]
         [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> CreateProfileAsync(Profile profile)
+        public async Task<IHttpActionResult> CreateProfileAsync()
         {
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                return BadRequest();
+            }
+
             try
             {
-                if (!Request.Content.IsMimeMultipartContent())
-                {
-                    return BadRequest();
-                }
+                
                 var result = await Request.Content.ReadAsMultipartAsync();
 
                 var requestJson = await result.Contents[0].ReadAsStringAsync();
@@ -91,19 +91,19 @@ namespace SocialNetwork.api.Controllers
                 {
                     model.PictureUrl = await CreateBlobAsync(result.Contents[1]);
                 }*/
-
-                var newProfile = new Profile()
+                var accountId = User.Identity.GetUserId();
+                var profile = new Profile()
                 {
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     BirthDate = model.BirthDate,
-                    PictureUrl = model.PictureUrl/*,
-                    AccountId = model.AccountId*/
+                    PictureUrl = model.PictureUrl,
+                    AccountId = accountId
                 };
 
-                await _repository.CreateAsync(newProfile);
+                await _repository.CreateAsync(profile);
 
-                return Ok(newProfile);
+                return Ok(profile);
             }
             catch (Exception e)
             {

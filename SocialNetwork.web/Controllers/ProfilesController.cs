@@ -3,22 +3,24 @@ using System.Threading.Tasks;
 using System.Web.Mvc;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using SocialNetwork.core.Models;
-using SocialNetwork.web.Models;
 using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
+using System.Net;
+using SocialNetwork.web.Models.Profile;
+using SocialNetwork.core.Models;
 
 namespace SocialNetwork.web.Controllers
 {
-    [Authorize]
+
     public class ProfilesController : Controller
     {
         readonly Uri UriAccount = new Uri("http://localhost:2001/");
 
         // GET: Profiles
         [HttpGet]
-        public async Task<ActionResult> Index(string AccountID)
+        [Route(Name ="Details")]
+        public async Task<ActionResult> Details()
         {
             try
             {
@@ -27,16 +29,36 @@ namespace SocialNetwork.web.Controllers
                 {
                     client.BaseAddress = UriAccount;
                     client.DefaultRequestHeaders.Accept.Clear();
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Baerer", $"{acess_token}");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
 
-                    var response = await client.GetAsync(string.Concat("api/Profiles/getByIdAccount/{0}", AccountID));
-                    var resultContent = await response.Content.ReadAsStringAsync();
-                    if (string.IsNullOrEmpty(resultContent))
+                    var response = await client.GetAsync("api/Profiles/getProfileByAccount");
+                    if (response.IsSuccessStatusCode)
                     {
-                        return View("Create", "Profile");
-                    }
+                        var responseContent = await response.Content.ReadAsStringAsync();
 
-                    return View(response);
+                        if (responseContent == "null")
+                        {
+                            return RedirectToAction("Create", "Profiles");
+                        }
+
+                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContent);
+                        ProfileViewModel profileView = new ProfileViewModel()
+                        {
+                            FirstName = profile.FirstName,
+                            LastName = profile.LastName,
+                            BirthDate  = profile.BirthDate,
+                            PictureUrl = profile.PictureUrl
+                        };
+
+                        return View(profileView);
+                    }
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        return RedirectToAction("Login", "Account");
+                    }
+                    
+
+                    return View("Error");
                 }
             }
             catch(Exception e)
@@ -48,29 +70,28 @@ namespace SocialNetwork.web.Controllers
         }
 
         // GET: Profiles/Create
-       /* public ActionResult Create()
+        [HttpGet]
+        public ActionResult Create()
         {
-            ProfileModelView model = new ProfileModelView();
-            model.AccountId = "";
-
-            return View(model);
-        }*/
+            return View();
+        }
 
         // POST: Profiles/Create
         // To protect from overposting attacks, please enable the specific properties you want to bind to, for 
         // more details see https://go.microsoft.com/fwlink/?LinkId=317598.
-        //[HttpPost]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Create(ProfileModelView model)
+        public async Task<ActionResult> Create(ProfileViewModel model)
         {
-            string acess_token = Session["access_token"]?.ToString();
-            if (string.IsNullOrEmpty(acess_token))
-            {
-                return RedirectToAction("Login", "Acount", null);
-            }
             if (!ModelState.IsValid)
             {
                 return View(model);
+            }
+
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Login", "Acount");
             }
 
             using (var client = new HttpClient())
@@ -79,8 +100,7 @@ namespace SocialNetwork.web.Controllers
                 {
                     client.BaseAddress = UriAccount;
                     client.DefaultRequestHeaders.Accept.Clear();
-
-                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Baerer", $"{acess_token}");
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
 
                     content.Add(new StringContent(JsonConvert.SerializeObject(model)));
 
@@ -107,26 +127,26 @@ namespace SocialNetwork.web.Controllers
                         };
 
                         content.Add(fileContent);
+                        
+                    }
 
-                        var response = await client.PostAsync("api/Profiles/Create", content);
+                    var response = await client.PostAsync("api/Profiles/Create", content);
 
-                        var responseContent = await response.Content.ReadAsStringAsync();
-                        ProfileModelView profile = JsonConvert.DeserializeObject<ProfileModelView>(responseContent);
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    ProfileViewModel profile = JsonConvert.DeserializeObject<ProfileViewModel>(responseContent);
 
-                        if (response.IsSuccessStatusCode)
-                        {
-                            return RedirectToAction("Index", "Profile", profile);
-                        }
-                        else
-                        {
-                            return View("Error");
-                        }
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Details", "Profile");
+                    }
+                    else
+                    {
+                        return View("Error");
                     }
 
                 }
             }
 
-                return View(model);
         }
 
         // GET: Profiles/Details/5

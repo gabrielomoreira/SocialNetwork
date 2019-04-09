@@ -1,5 +1,5 @@
 ﻿using Newtonsoft.Json.Linq;
-using SocialNetwork.web.Models;
+using SocialNetwork.web.Models.Account;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
@@ -32,10 +32,9 @@ namespace SocialNetwork.web.Controllers
                 client.BaseAddress = UriAccount;
 
                 var response = await client.PostAsJsonAsync("api/Account/Register", model);
-                string acess_token = Session["access_token"]?.ToString();
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("Create", "Profiles", null);
+                    return RedirectToAction("Login", "Account");
                 }
                 return View(model);
             }
@@ -78,7 +77,8 @@ namespace SocialNetwork.web.Controllers
                         var tokenData = JObject.Parse(responseContent);
 
                         Session.Add("access_token", tokenData["access_token"]);
-                        return RedirectToAction("Create", "Profiles");
+                        string acess_token = Session["access_token"]?.ToString();
+                        return RedirectToAction("Details", "Profiles");
                     }
                     return View(model);
                 }

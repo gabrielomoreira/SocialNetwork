@@ -1,4 +1,4 @@
-﻿@model SocialNetwork.core.Models.Profile
+﻿@model SocialNetwork.web.Models.Profile.ProfileViewModel
 
 @{
     ViewBag.Title = "Create";
@@ -7,10 +7,10 @@
 <h2>Create</h2>
 
 
-@using (Html.BeginForm()) 
+@using (Html.BeginForm("Create", "Profiles", FormMethod.Post, new { enctype = "multipart/form-data" }))
 {
     @Html.AntiForgeryToken()
-    
+
     <div class="form-horizontal">
         <h4>Profile</h4>
         <hr />

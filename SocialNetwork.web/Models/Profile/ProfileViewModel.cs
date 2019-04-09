@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
 
-namespace SocialNetwork.web.Models
+namespace SocialNetwork.web.Models.Profile
 {
-    public class ProfileModelView
+    public class ProfileViewModel
     {
         [Required]
         [Display(Name ="Nome")]
@@ -18,13 +15,13 @@ namespace SocialNetwork.web.Models
 
         [Required]
         [Display(Name = "Data de nascimento")]
+        [DataType(DataType.Date)]
+        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy}")]
         public DateTime BirthDate { get; set; }
 
-        //[Required]
         [Display(Name = "Imagem de perfil")]
         public string PictureUrl { get; set; }
 
-        [Required]
         public string AccountId { get; set; }
 
     }

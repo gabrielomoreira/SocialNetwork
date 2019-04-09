@@ -13,5 +13,9 @@ namespace SocialNetwork.core.Models
 
         public string AccountId { get; set; }
 
+        public static implicit operator Profile(string v)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
