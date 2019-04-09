@@ -87,10 +87,10 @@ namespace SocialNetwork.api.Controllers
                 var requestJson = await result.Contents[0].ReadAsStringAsync();
                 var model = JsonConvert.DeserializeObject<Profile>(requestJson);
 
-                /*if (result.Contents.Count > 1)
+                if (result.Contents.Count > 1)
                 {
-                    model.PictureUrl = await CreateBlobAsync(result.Contents[1]);
-                }*/
+                    model.PictureUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
+                }
                 var accountId = User.Identity.GetUserId();
                 var profile = new Profile()
                 {
@@ -133,10 +133,10 @@ namespace SocialNetwork.api.Controllers
                 var requestJson = await result.Contents[0].ReadAsStringAsync();
                 profile = JsonConvert.DeserializeObject<Profile>(requestJson);
 
-                /*if (result.Contents.Count > 1)
+                if (result.Contents.Count > 1)
                 {
-                    model.PictureUrl = await CreateBlobAsync(result.Contents[1]);
-                }*/
+                    profile.PictureUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
+                }
                 await _repository.UpdateAsync(profile);
 
                 return Ok(profile);
@@ -183,11 +183,36 @@ namespace SocialNetwork.api.Controllers
             return StatusCode(HttpStatusCode.InternalServerError);
         }
 
-        private async Task<string> CreateBlobAsync(HttpContent httpContent)
+        private async Task<string> CreateBlobPictureProfilesAsync(HttpContent httpContent)
         {
-            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
+            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionSocialNetworkPictures"));
 
-            var blobContainerName = "socialNetwork-picture";
+            var blobContainerName = "socialNetwork-pictureProfiles";
+            var blobClient = storageAccount.CreateCloudBlobClient();
+            var blobContainer = blobClient.GetContainerReference(blobContainerName);
+            await blobContainer.CreateIfNotExistsAsync();
+
+            await blobContainer.SetPermissionsAsync(
+                new BlobContainerPermissions
+                {
+                    PublicAccess = BlobContainerPublicAccessType.Blob
+                }
+            );
+
+            var fileName = httpContent.Headers.ContentDisposition.FileName;
+            var byteArray = await httpContent.ReadAsByteArrayAsync();
+
+            var blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(fileName));
+            await blob.UploadFromByteArrayAsync(byteArray, 0, byteArray.Length);
+
+            return blob.Uri.AbsoluteUri;
+        }
+
+        private async Task<string> CreateBlobPicturesAsync(HttpContent httpContent)
+        {
+            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionSocialNetworkPictures"));
+
+            var blobContainerName = "socialNetwork-pictures";
             var blobClient = storageAccount.CreateCloudBlobClient();
             var blobContainer = blobClient.GetContainerReference(blobContainerName);
             await blobContainer.CreateIfNotExistsAsync();
