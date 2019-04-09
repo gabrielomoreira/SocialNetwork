@@ -10,6 +10,9 @@
     <h4>Profile</h4>
     <hr />
     <dl class="dl-horizontal">
+
+        @Html.HiddenFor(model => model.Id)
+        @Html.HiddenFor(model => model.AccountId)
         <dt>
             @Html.DisplayNameFor(model => model.FirstName)
         </dt>
@@ -39,20 +42,13 @@
         </dt>
 
         <dd>
-            @Html.DisplayFor(model => model.PictureUrl)
+            <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 150px; height: 150px;" />
         </dd>
 
-        <dt>
-            @Html.DisplayNameFor(model => model.AccountId)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.AccountId)
-        </dd>
 
     </dl>
 </div>
 <p>
-    @Html.ActionLink("Atualizar perfil", "Update", "Account" , Model ) 
-    @Html.ActionLink("Apagar perfil", "Delete", "Account", Model ) 
+    @Html.ActionLink("Atualizar perfil", "Update",  Model ) 
+    @Html.ActionLink("Apagar perfil", "Delete",  Model ) 
 </p>

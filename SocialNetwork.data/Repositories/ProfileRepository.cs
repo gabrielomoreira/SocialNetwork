@@ -63,9 +63,9 @@ namespace SocialNetwork.data.Repositories
                 _dataContextAsync.Entry(profile).State = EntityState.Modified;
                 await _dataContextAsync.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException)
+            catch (Exception e)
             {
-                throw;
+                throw e;
             }
         }
 

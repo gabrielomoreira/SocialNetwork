@@ -5,6 +5,9 @@ namespace SocialNetwork.web.Models.Profile
 {
     public class ProfileViewModel
     {
+
+        public int Id{ get; set; }
+
         [Required]
         [Display(Name ="Nome")]
         public string FirstName { get; set; }

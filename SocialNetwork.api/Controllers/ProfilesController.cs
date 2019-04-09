@@ -120,7 +120,7 @@ namespace SocialNetwork.api.Controllers
         [ResponseType(typeof(void))]
         public async Task<IHttpActionResult> UpdateProfileAsync()
         {
-            var accountId = User.Identity.GetUserId();
+            //var accountId = User.Identity.GetUserId();
             Profile profile = null;
             try
             {
@@ -185,12 +185,13 @@ namespace SocialNetwork.api.Controllers
 
         private async Task<string> CreateBlobPictureProfilesAsync(HttpContent httpContent)
         {
-            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionSocialNetworkPictures"));
+            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
 
-            var blobContainerName = "socialNetwork-pictureProfiles";
+            var blobContainerName = "sn-pictureprofiles";
             var blobClient = storageAccount.CreateCloudBlobClient();
             var blobContainer = blobClient.GetContainerReference(blobContainerName);
             await blobContainer.CreateIfNotExistsAsync();
+            
 
             await blobContainer.SetPermissionsAsync(
                 new BlobContainerPermissions
@@ -210,9 +211,9 @@ namespace SocialNetwork.api.Controllers
 
         private async Task<string> CreateBlobPicturesAsync(HttpContent httpContent)
         {
-            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionSocialNetworkPictures"));
+            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
 
-            var blobContainerName = "socialNetwork-pictures";
+            var blobContainerName = "sn-pictures";
             var blobClient = storageAccount.CreateCloudBlobClient();
             var blobContainer = blobClient.GetContainerReference(blobContainerName);
             await blobContainer.CreateIfNotExistsAsync();

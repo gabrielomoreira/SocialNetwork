@@ -2,6 +2,7 @@
 using SocialNetwork.web.Models.Account;
 using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Mvc;
@@ -80,7 +81,11 @@ namespace SocialNetwork.web.Controllers
                         string acess_token = Session["access_token"]?.ToString();
                         return RedirectToAction("Details", "Profiles");
                     }
-                    return View(model);
+                    if (response.StatusCode == HttpStatusCode.BadRequest)
+                    {
+                        return RedirectToAction("Register");
+                    }
+                    return View("Error");
                 }
             }
 

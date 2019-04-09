@@ -44,10 +44,12 @@ namespace SocialNetwork.web.Controllers
                         Profile profile = JsonConvert.DeserializeObject<Profile>(responseContent);
                         ProfileViewModel profileView = new ProfileViewModel()
                         {
+                            Id = profile.Id,
                             FirstName = profile.FirstName,
                             LastName = profile.LastName,
                             BirthDate  = profile.BirthDate,
-                            PictureUrl = profile.PictureUrl
+                            PictureUrl = profile.PictureUrl,
+                            AccountId = profile.AccountId
                         };
 
                         return View(profileView);
@@ -137,7 +139,7 @@ namespace SocialNetwork.web.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Details", "Profile");
+                        return RedirectToAction("Details", "Profiles");
                     }
                     else
                     {
@@ -148,23 +150,6 @@ namespace SocialNetwork.web.Controllers
             }
 
         }
-
-        // GET: Profiles/Details/5
-        /*public async Task<ActionResult> Details(int? id)
-        {
-            if (id == null)
-            {
-                return new HttpStatusCodeResult(HttpStatusCode.BadRequest);
-            }
-            Profile profile = await db.Profiles.FindAsync(id);
-            if (profile == null)
-            {
-                return HttpNotFound();
-            }
-            return View(profile);
-        }
-        */
-        
 
         // GET: Profiles/Edit/5
         [HttpGet]
@@ -238,7 +223,7 @@ namespace SocialNetwork.web.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Details", "Profile");
+                        return RedirectToAction("Details", "Profiles");
                     }
                     else
                     {
