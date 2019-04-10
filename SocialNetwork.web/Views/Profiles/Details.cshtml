@@ -19,16 +19,18 @@
 
 </div>
 
-<p>
-    @if (!Model.IsFriend)
-    {
-        @Html.ActionLink("Adicionar aos amigos", "AddFriend", "Profiles", Model, FormMethod.Get)
-    }
-    @if (Model.IsFriend)
-    {
-        @Html.ActionLink("Remover dos amigos", "RemoveFriend", "Profiles",  Model, FormMethod.Get)
-    }
-</p>
+@if (Session["access_token"] != null)
+{
+    <p>
+        @if (!Model.IsFriend)
+        {
+            @Html.ActionLink("Adicionar", "AddFriend", new { id = Model.Id })
+        }
+        @if (Model.IsFriend)
+        {
+            @Html.ActionLink("Remover", "RemoveFriend", new { id = Model.Id })
+        }
+    </p>
+}
 
-@Html.HiddenFor(model => model.Id)
-@Html.HiddenFor(model => model.AccountId)
+

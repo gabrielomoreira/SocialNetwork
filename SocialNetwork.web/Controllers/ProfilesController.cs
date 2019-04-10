@@ -128,7 +128,7 @@ namespace SocialNetwork.web.Controllers
                     }
                 }
 
-                // Senão busca o perfil da conta atual
+                // Dessa parte em diante precisa estar logado para pegar informações sensíveis
                 using (var client = new HttpClient())
                 {
                     /** Este processo é pessado, verificar uma forma de otimizar a busca de amigos */
@@ -143,12 +143,6 @@ namespace SocialNetwork.web.Controllers
                     {
                         var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
 
-                        // Verifica se existe perfil da conta (nesse ponte, não é experado isso)
-                        if (responseContentAccountProfile == "null")
-                        {
-                            throw new Exception("Perfil da conta não encontrada");
-                        }
-
                         Profile profile = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
                         ProfileViewModel profileAccountProfile = new ProfileViewModel()
                         {
@@ -156,38 +150,31 @@ namespace SocialNetwork.web.Controllers
                             FirstName = profile.FirstName,
                             LastName = profile.LastName,
                             BirthDate = profile.BirthDate,
-                            PictureUrl = profile.PictureUrl,
-                            AccountId = profile.AccountId
+                            PictureUrl = profile.PictureUrl
                         };
+                        profileAccountProfile.Friends = new List<ProfileViewModel>();
 
-                        // verifica se o perfil da busca é o mesmo do perfil da conta
+                        // Se o perfil da busca é o mesmo do perfil da conta, redireciona para index
                         if (profile.Id == profileView.Id)
                         {
                             return RedirectToAction("Index", "Profiles");
                         }
 
-                        if (profile.Friends == null)
-                        {
-                            profileView.IsFriend = false;
-                            return View(profileView);
-                        }
-
-                        
-                        // Adiciona todos os amigos da Conta do Perfil que está logado
+                        // Adiciona os amigos para a conta
                         ICollection<Profile> friendsAccount = new List<Profile>();
-                        foreach(Profile friendAccount in profile.Friends)
+                        foreach(Profile friend in profile.Friends)
                         {
-                            ProfileViewModel friendAccountView = new ProfileViewModel()
+                            ProfileViewModel friendView = new ProfileViewModel()
                             {
-                                Id = friendAccount.Id,
-                                FirstName = friendAccount.FirstName,
-                                LastName = friendAccount.LastName,
-                                BirthDate = friendAccount.BirthDate,
-                                PictureUrl = friendAccount.PictureUrl
+                                Id = friend.Id,
+                                FirstName = friend.FirstName,
+                                LastName = friend.LastName,
+                                BirthDate = friend.BirthDate,
+                                PictureUrl = friend.PictureUrl
                             };
 
                             // popula a lista de amigos
-                            profileAccountProfile.Friends.Add(friendAccountView);
+                            profileAccountProfile.Friends.Add(friendView);
                         }
 
                         // verifica se existe um amigo da lista de amigos para retornar se é ou não amigo
@@ -288,46 +275,27 @@ namespace SocialNetwork.web.Controllers
                             throw new Exception("Perfil da conta não encontrada");
                         }
 
-                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
+                        Profile profileAcc = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
+
+                        // Remove o perfil da lista, para não aparecer na view
+                        profilesViewModel = profilesViewModel.Where(x => x.Id != profileAcc.Id).ToList();
+
                         ProfileViewModel profileAccount = new ProfileViewModel()
                         {
-                            Id = profile.Id,
-                            FirstName = profile.FirstName,
-                            LastName = profile.LastName,
-                            BirthDate = profile.BirthDate,
-                            PictureUrl = profile.PictureUrl,
-                            AccountId = profile.AccountId
+                            Id = profileAcc.Id,
+                            FirstName = profileAcc.FirstName,
+                            LastName = profileAcc.LastName,
+                            BirthDate = profileAcc.BirthDate,
+                            PictureUrl = profileAcc.PictureUrl,
+                            AccountId = profileAcc.AccountId
                         };
 
-
-                        // Remove o perfil da conta da lista de busca
-                        profilesViewModel = profilesViewModel.Where(f => f.Id != profileAccount.Id).ToList();
-
-
-                        // Adiciona todos os amigos da Conta do Perfil que está logado
-                        if (profile.Friends != null)
-                        { 
-                            ICollection<Profile> friendsAccount = new List<Profile>();
-                            foreach (Profile friendAccount in profile.Friends)
-                            {
-                                ProfileViewModel friendAccountView = new ProfileViewModel()
-                                {
-                                    Id = friendAccount.Id,
-                                    FirstName = friendAccount.FirstName,
-                                    LastName = friendAccount.LastName,
-                                    BirthDate = friendAccount.BirthDate,
-                                    PictureUrl = friendAccount.PictureUrl
-                                };
-
-                                // popula a lista de amigos
-                                profileAccount.Friends.Add(friendAccountView);
-                            }
-
-                            foreach (ProfileViewModel pvm in profilesViewModel)
-                            {
-                                pvm.IsFriend = profileAccount.Friends.Where(f => f.Id == pvm.Id).Count() == 1;
-                            }
+                        foreach (ProfileViewModel friend in profilesViewModel)
+                        {
+                            friend.IsFriend = profileAcc.Friends.Any(x => x.Id == friend.Id);
                         }
+                        
+                        
                     }
 
                     return View(profilesViewModel);
@@ -587,7 +555,7 @@ namespace SocialNetwork.web.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("List", "Profiles");
+                        return RedirectToAction("ListProfiles", "Profiles");
                     }
                     else
                     {
@@ -600,8 +568,7 @@ namespace SocialNetwork.web.Controllers
         }
 
         [HttpGet, ActionName("RemoveFriend")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> RemoveFriendAction(ProfileViewModel model)
+        public async Task<ActionResult> RemoveFriendAction(int id)
         {
             string acess_token = Session["access_token"]?.ToString();
             if (string.IsNullOrEmpty(acess_token))
@@ -615,10 +582,10 @@ namespace SocialNetwork.web.Controllers
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
 
-                var response = await client.GetAsync("api/Profiles/RemoveFriend");
+                var response = await client.GetAsync(string.Format("api/Profiles/RemoveFriend/{0}", id));
                 if (response.IsSuccessStatusCode)
                 {
-                    return View("Details", "Profiles");
+                    return RedirectToAction("ListProfiles", "Profiles");
                 }
                 else
                 {
