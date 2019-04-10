@@ -214,15 +214,11 @@ namespace SocialNetwork.api.Controllers
 
 
         #region controlFriends
-        [HttpPut]
-        [Route("AddFriend")]
+        [HttpGet]
+        [Route("AddFriend/{id:int}")]
         [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> AddFriendAsync()
+        public async Task<IHttpActionResult> AddFriendAsync(int id)
         {
-            if (!Request.Content.IsMimeMultipartContent())
-            {
-                return BadRequest();
-            }
             try
             {
                 // Pega o perfil da conta
@@ -231,10 +227,12 @@ namespace SocialNetwork.api.Controllers
 
 
                 // Atraves do request, pega os dados do amigo
-                var result = await Request.Content.ReadAsMultipartAsync();
-                var requestJson = await result.Contents[0].ReadAsStringAsync();
-                Profile friend = JsonConvert.DeserializeObject<Profile>(requestJson);
+                Profile friend = await _repository.GetByIDAsync(id);
 
+                if (profile.Friends == null)
+                {
+                    profile.Friends = new List<Profile>();
+                }
 
                 // Adiciona o amigo
                 profile.Friends.Add(friend);
@@ -251,33 +249,31 @@ namespace SocialNetwork.api.Controllers
 
         }
 
-        [HttpPost]
-        [Route("RemoveFriend")]
+        [HttpGet]
+        [Route("RemoveFriend/{id:int}")]
         [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> RemoveFriendAsync()
+        public async Task<IHttpActionResult> RemoveFriendAsync(int id)
         {
-            if (!Request.Content.IsMimeMultipartContent())
-            {
-                return BadRequest();
-            }
-
             try
             {
+
                 // Pega o perfil da conta
                 var accountId = User.Identity.GetUserId();
                 Profile profile = await _repository.GetByIDAccountAsync(accountId);
 
 
                 // Atraves do request, pega os dados do amigo
-                var result = await Request.Content.ReadAsMultipartAsync();
-                var requestJson = await result.Contents[0].ReadAsStringAsync();
-                Profile friend = JsonConvert.DeserializeObject<Profile>(requestJson);
+                Profile friend = await _repository.GetByIDAsync(id);
 
+                if (profile.Friends == null)
+                {
+                    profile.Friends = new List<Profile>();
+                }
 
-                // Remove o amigo
+                // Adiciona o amigo
                 profile.Friends.Remove(friend);
                 await _repository.UpdateAsync(profile);
-
+                
 
                 //Retorno se OK
                 return Ok(profile);

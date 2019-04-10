@@ -19,8 +19,7 @@ namespace SocialNetwork.api.Models
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
-        public ApplicationDbContext()
-            : base("SocialNetworkConnection", throwIfV1Schema: false)
+        public ApplicationDbContext() : base("SocialNetwork", throwIfV1Schema: false)
         {
         }
         

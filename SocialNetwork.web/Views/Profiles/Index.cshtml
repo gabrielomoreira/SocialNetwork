@@ -4,10 +4,8 @@
     ViewBag.Title = Model.FirstName + " " + Model.LastName;
 }
 
-<h2>Details</h2>
-
 <div>
-    <h4>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h4>
+    <h3>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h3>
     <hr />
     <div class="alert-info">
         <div>
@@ -23,8 +21,6 @@
 
 <p>
     @Html.ActionLink("Atualizar perfil", "Update", Model)
-    <!-- Html.ActionLink("Apagar perfil", "Delete", Model) -->
-
 </p>
 
 @Html.HiddenFor(model => model.Id)

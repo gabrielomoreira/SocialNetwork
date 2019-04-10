@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web.Mvc;
 
@@ -16,7 +17,11 @@ namespace SocialNetwork.web.Controllers
         [HttpGet]
         public ActionResult Register()
         {
-            return View();
+            if (string.IsNullOrEmpty(Session["access_token"]?.ToString()))
+            {
+                return View();
+            }
+            return RedirectToAction("Index", "Profiles");
         }
 
         [HttpPost]
@@ -44,7 +49,11 @@ namespace SocialNetwork.web.Controllers
         [HttpGet]
         public ActionResult Login()
         {
-            return View();
+            if (string.IsNullOrEmpty(Session["access_token"]?.ToString()))
+            {
+                return View();
+            }
+            return RedirectToAction("Index", "Profiles");
         }
 
         [HttpPost]
@@ -77,13 +86,12 @@ namespace SocialNetwork.web.Controllers
                         var tokenData = JObject.Parse(responseContent);
 
                         Session.Add("access_token", tokenData["access_token"]);
-                        string acess_token = Session["access_token"]?.ToString();
+
                         return RedirectToAction("Index", "Profiles");
                     }
                     if (response.StatusCode == HttpStatusCode.BadRequest)
                     {
                         return View();
-                        //return RedirectToAction("Register");
                     }
                     return View("Error");
                 }
@@ -91,15 +99,9 @@ namespace SocialNetwork.web.Controllers
 
         }
 
-        [HttpGet]
-        public ActionResult Logout()
-        {
-            return View();
-        }
-
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult> Logout(LoginViewModel model)
+        public async Task<ActionResult> Logoff(LoginViewModel model)
         {
             try
             {
@@ -114,6 +116,7 @@ namespace SocialNetwork.web.Controllers
                 {
                     client.BaseAddress = UriAccount;
                     client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{Session["access_token"]?.ToString()}");
 
                     using (var requestContent = new FormUrlEncodedContent(data))
                     {
@@ -121,6 +124,7 @@ namespace SocialNetwork.web.Controllers
 
                         if (response.IsSuccessStatusCode)
                         {
+                            Session.Remove("access_token");
                             return RedirectToAction("Login", "Account");
                         }
                         return View("Error");

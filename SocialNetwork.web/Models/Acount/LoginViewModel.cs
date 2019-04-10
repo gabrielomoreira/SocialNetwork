@@ -13,5 +13,7 @@ namespace SocialNetwork.web.Models.Account
         [DataType(DataType.Password)]
         [Display(Name = "Password")]
         public string Password { get; set; }
+
     }
+    
 }

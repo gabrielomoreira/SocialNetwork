@@ -4,9 +4,14 @@
     ViewBag.Title = "ListProfiles";
 }
 
-<h2>ListProfiles</h2>
+@if (Model.Count() == 0)
+{
+    <h2>A rede social não contem nenhum perfil para interagir...</h2>
+}
 
-<table class="table">
+@if (Model.Count() > 0)
+{
+    <table class="table">
     <tr>
         <th>
             @Html.DisplayNameFor(model => model.PictureUrl)
@@ -20,18 +25,30 @@
         <th></th>
     </tr>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            <img src="@Url.Content(item.PictureUrl)" alt="Profile Picture" style="width: 50px; height: 50px;" />
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.FirstName) @Html.DisplayFor(modelItem => item.LastName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.BirthDate)
-        </td>
-    </tr>
-}
+    @foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                <img src="@Url.Content(item.PictureUrl)" alt="Profile Picture" style="width: 50px; height: 50px;" />
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.FirstName) @Html.DisplayFor(modelItem => item.LastName)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.BirthDate)
+            </td>
+            <td>
+                @if (!item.IsFriend)
+                {
+                    @Html.ActionLink("Adicionar", "AddFriend", new { item.Id })
+                }
+                @if (item.IsFriend)
+                {
+                    @Html.ActionLink("Remover", "RemoveFriend", new { item.Id })
+                }
 
-</table>
+            </td>
+        </tr>
+    }
+    </table>
+}

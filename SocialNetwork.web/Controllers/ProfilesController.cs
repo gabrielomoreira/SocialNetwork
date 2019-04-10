@@ -19,12 +19,14 @@ namespace SocialNetwork.web.Controllers
         readonly Uri UriAccount = new Uri("http://localhost:2001/");
 
         // GET: Profiles
+        // Dados da própria conta
         [HttpGet]
         [Route(Name ="Index")]
         public async Task<ActionResult> Index()
         {
             try
             {
+               
                 string acess_token = Session["access_token"]?.ToString();
                 using (HttpClient client = new HttpClient())
                 {
@@ -61,83 +63,152 @@ namespace SocialNetwork.web.Controllers
                     }
                     
 
-                    return View("Error");
+                    return RedirectToAction("Error");
                 }
             }
             catch(Exception e)
             {
                 Console.Write(e.Message);
-                return View("Error");
+                return RedirectToAction("Error");
             }
             
         }
 
+        // dados da conta de terceiros
         [HttpGet]
         [Route(Name = "Details")]
         public async Task<ActionResult> Details(int id)
         {
             try
             {
+                // Verifica se existe um token (porque está logado)
+                string acess_token = Session["access_token"]?.ToString();
+
+                ProfileViewModel profileView = null;
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = UriAccount;
-
+                    
                     var response = await client.GetAsync(string.Format("api/Profiles/getProfile/{0}", id));
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
 
-                        if (responseContent == "null")
+                        if (responseContent != "null")
                         {
-                            return RedirectToAction("NotFound", "Profiles");
+                            Profile profile = JsonConvert.DeserializeObject<Profile>(responseContent);
+                            profileView = new ProfileViewModel()
+                            {
+                                Id = profile.Id,
+                                FirstName = profile.FirstName,
+                                LastName = profile.LastName,
+                                BirthDate = profile.BirthDate,
+                                PictureUrl = profile.PictureUrl,
+                                AccountId = profile.AccountId,
+                                IsFriend = false // padrão
+                            };
+                        }
+                    }
+                    else
+                    {
+                        // não precisa de autorização para verificar dados do amigo
+                        return RedirectToAction("Error");
+                    }
+
+                    // Se o profile aqui estiver nulo retorna "NotFound"
+                    if (profileView == null)
+                    {
+                        return RedirectToAction("NotFound", "Profiles");
+                    }
+                    
+                    // Se não tem um token, retorna a view do jeito que está
+                    if (string.IsNullOrEmpty(acess_token) && profileView != null)
+                    {
+                        return View(profileView);
+                    }
+                }
+
+                // Senão busca o perfil da conta atual
+                using (var client = new HttpClient())
+                {
+                    /** Este processo é pessado, verificar uma forma de otimizar a busca de amigos */
+
+                    //Se chegar aqui é porque existe um token, portanto, uma conta logada. Logo retorna essa conta
+                    client.BaseAddress = UriAccount;
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+
+                    var responseAccountProfile = await client.GetAsync("api/Profiles/getProfileByAccount");
+                    if (responseAccountProfile.IsSuccessStatusCode)
+                    {
+                        var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
+
+                        // Verifica se existe perfil da conta (nesse ponte, não é experado isso)
+                        if (responseContentAccountProfile == "null")
+                        {
+                            throw new Exception("Perfil da conta não encontrada");
                         }
 
-                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContent);
-                        ProfileViewModel profileView = new ProfileViewModel()
+                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
+                        ProfileViewModel profileAccountProfile = new ProfileViewModel()
                         {
                             Id = profile.Id,
                             FirstName = profile.FirstName,
                             LastName = profile.LastName,
                             BirthDate = profile.BirthDate,
                             PictureUrl = profile.PictureUrl,
-                            AccountId = profile.AccountId,
-                            IsFriend = false
+                            AccountId = profile.AccountId
                         };
-                        /*
-                        if (profile.Friends != null)
-                        { 
-                            foreach (Profile item in profile.Friends)
-                            {
-                                profileView.Friends.Add(new ProfileViewModel()
-                                {
-                                    Id = item.Id,
-                                    FirstName = item.FirstName,
-                                    LastName = item.LastName,
-                                    BirthDate = item.BirthDate,
-                                    PictureUrl = item.PictureUrl,
-                                    AccountId = item.AccountId
-                                });
-                            }
-                            profileView.IsFriend = (profileView.Friends.Where(friend => friend.Id == id) != null);
+
+                        // verifica se o perfil da busca é o mesmo do perfil da conta
+                        if (profile.Id == profileView.Id)
+                        {
+                            return RedirectToAction("Index", "Profiles");
+                        }
+
+                        if (profile.Friends == null)
+                        {
+                            profileView.IsFriend = false;
+                            return View(profileView);
                         }
 
                         
-                    */
-                        return View(profileView);
+                        // Adiciona todos os amigos da Conta do Perfil que está logado
+                        ICollection<Profile> friendsAccount = new List<Profile>();
+                        foreach(Profile friendAccount in profile.Friends)
+                        {
+                            ProfileViewModel friendAccountView = new ProfileViewModel()
+                            {
+                                Id = friendAccount.Id,
+                                FirstName = friendAccount.FirstName,
+                                LastName = friendAccount.LastName,
+                                BirthDate = friendAccount.BirthDate,
+                                PictureUrl = friendAccount.PictureUrl
+                            };
+
+                            // popula a lista de amigos
+                            profileAccountProfile.Friends.Add(friendAccountView);
+                        }
+
+                        // verifica se existe um amigo da lista de amigos para retornar se é ou não amigo
+                        profileView.IsFriend = profileAccountProfile.Friends.Where(f => f.Id == profileView.Id).Count() == 1;
+
+
                     }
-                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    // se não tiver sucesso no retorno da conta de perfil, deve verificar a causa de retorno não experado, por isso lança uma excessão
+                    if (!responseAccountProfile.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Login", "Account");
+                        throw new Exception(responseAccountProfile.StatusCode.ToString());
                     }
 
-
-                    return View("Error");
+                    return View(profileView);
                 }
             }
             catch (Exception e)
             {
+                // Em casos de erro!
                 Console.Write(e.Message);
-                return View("Error");
+                return RedirectToAction("Error");
             }
 
         }
@@ -148,6 +219,7 @@ namespace SocialNetwork.web.Controllers
         {
             try
             {
+                ICollection<ProfileViewModel> profilesViewModel = new List<ProfileViewModel>();
                 using (var client = new HttpClient())
                 {
                     client.BaseAddress = UriAccount;
@@ -159,11 +231,11 @@ namespace SocialNetwork.web.Controllers
 
                         if (responseContent == "null")
                         {
-                            return RedirectToAction("Error");
+                            return View(profilesViewModel);
                         }
 
                         ICollection<Profile> profiles = JsonConvert.DeserializeObject<ICollection<Profile>>(responseContent);
-                        ICollection<ProfileViewModel> profileViewModel = new List<ProfileViewModel>();
+                        
                         foreach(Profile profile in profiles)
                         {
                             ProfileViewModel profileVM = new ProfileViewModel()
@@ -173,32 +245,102 @@ namespace SocialNetwork.web.Controllers
                                 FirstName = profile.FirstName,
                                 LastName = profile.LastName,
                                 BirthDate = profile.BirthDate,
-                                PictureUrl = profile.PictureUrl
-
+                                PictureUrl = profile.PictureUrl,
+                                IsFriend = false
                             };
 
-                            profileViewModel.Add(profileVM);
+                            profilesViewModel.Add(profileVM);
                         }
-
-                        return View(profileViewModel);
+                        
                     }
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         return RedirectToAction("Login", "Account");
                     }
-
-
-                    return View("Error");
                 }
+
+                // verifica se existe um token, caso não, retorna todos os amigos
+                string acess_token = Session["access_token"]?.ToString();
+                if (string.IsNullOrEmpty(acess_token))
+                {
+                    return View(profilesViewModel);
+                }
+
+                //senão...
+                //Remove perfil da conta da lista (caso esteja logado)
+                using (var client = new HttpClient())
+                {
+                    /** Este processo é pessado, verificar uma forma de otimizar a busca de amigos */
+                    //Se chegar aqui é porque existe um token, portanto, uma conta logada. Logo retorna essa conta
+                    client.BaseAddress = UriAccount;
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+
+                    // pega o perfil da conta
+                    var responseAccountProfile = await client.GetAsync("api/Profiles/getProfileByAccount");
+                    if (responseAccountProfile.IsSuccessStatusCode)
+                    {
+                        var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
+
+                        // Verifica se existe perfil da conta (nesse ponte, não é experado isso)
+                        if (responseContentAccountProfile == "null")
+                        {
+                            throw new Exception("Perfil da conta não encontrada");
+                        }
+
+                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
+                        ProfileViewModel profileAccount = new ProfileViewModel()
+                        {
+                            Id = profile.Id,
+                            FirstName = profile.FirstName,
+                            LastName = profile.LastName,
+                            BirthDate = profile.BirthDate,
+                            PictureUrl = profile.PictureUrl,
+                            AccountId = profile.AccountId
+                        };
+
+
+                        // Remove o perfil da conta da lista de busca
+                        profilesViewModel = profilesViewModel.Where(f => f.Id != profileAccount.Id).ToList();
+
+
+                        // Adiciona todos os amigos da Conta do Perfil que está logado
+                        if (profile.Friends != null)
+                        { 
+                            ICollection<Profile> friendsAccount = new List<Profile>();
+                            foreach (Profile friendAccount in profile.Friends)
+                            {
+                                ProfileViewModel friendAccountView = new ProfileViewModel()
+                                {
+                                    Id = friendAccount.Id,
+                                    FirstName = friendAccount.FirstName,
+                                    LastName = friendAccount.LastName,
+                                    BirthDate = friendAccount.BirthDate,
+                                    PictureUrl = friendAccount.PictureUrl
+                                };
+
+                                // popula a lista de amigos
+                                profileAccount.Friends.Add(friendAccountView);
+                            }
+
+                            foreach (ProfileViewModel pvm in profilesViewModel)
+                            {
+                                pvm.IsFriend = profileAccount.Friends.Where(f => f.Id == pvm.Id).Count() == 1;
+                            }
+                        }
+                    }
+
+                    return View(profilesViewModel);
+                }
+
             }
             catch (Exception e)
             {
                 Console.Write(e.Message);
-                return View("Error");
+                return RedirectToAction("Error");
             }
 
         }
-
 
 
         [HttpGet]
@@ -284,7 +426,7 @@ namespace SocialNetwork.web.Controllers
                     }
                     else
                     {
-                        return View("Error");
+                        return RedirectToAction("Error");
                     }
 
                 }
@@ -368,7 +510,7 @@ namespace SocialNetwork.web.Controllers
                     }
                     else
                     {
-                        return View("Error");
+                        return RedirectToAction("Error");
                     }
                 }
             }
@@ -413,28 +555,16 @@ namespace SocialNetwork.web.Controllers
                     }
                     else
                     {
-                        return View("Error");
+                        return RedirectToAction("Error");
                     }
 
                 }
             }
         }
 
+
         [HttpGet, ActionName("AddFriend")]
-        public ActionResult AddFriendGetAction()
-        {
-            string acess_token = Session["access_token"]?.ToString();
-            if (string.IsNullOrEmpty(acess_token))
-            {
-                return RedirectToAction("Login", "Account");
-            }
-            return View();
-        }
-
-
-        [HttpPost, ActionName("AddFriend")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult> AddFriendAction(ProfileViewModel model)
+        public async Task<ActionResult> AddFriendAction(int id)
         {
             string acess_token = Session["access_token"]?.ToString();
             if (string.IsNullOrEmpty(acess_token))
@@ -449,21 +579,19 @@ namespace SocialNetwork.web.Controllers
                     client.BaseAddress = UriAccount;
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
-
-                    content.Add(new StringContent(JsonConvert.SerializeObject(model)));
-
-                    var response = await client.PostAsync("api/Profiles/AddFriend", content);
+                    
+                    var response = await client.GetAsync(string.Format("api/Profiles/AddFriend/{0}", id));
 
                     var responseContent = await response.Content.ReadAsStringAsync();
                     ProfileViewModel profile = JsonConvert.DeserializeObject<ProfileViewModel>(responseContent);
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Details", "Profiles");
+                        return RedirectToAction("List", "Profiles");
                     }
                     else
                     {
-                        return View("Error");
+                        return RedirectToAction("Error");
                     }
 
                 }
@@ -494,7 +622,7 @@ namespace SocialNetwork.web.Controllers
                 }
                 else
                 {
-                    return View("Error");
+                    return RedirectToAction("Error");
                 }
             }
         }
