@@ -16,7 +16,7 @@ namespace SocialNetwork.web.Models.Account
 
         [Required]
         [DataType(DataType.Password)]
-        [Display(Name = "ConfirmPassword")]
+        [Display(Name = "Confirm password")]
         public string ConfirmPassword { get; set; }
     }
 }

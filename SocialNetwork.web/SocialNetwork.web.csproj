@@ -130,7 +130,6 @@
     <Compile Include="Controllers\AccountController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\ProfilesController.cs" />
-    <Compile Include="Controllers\ValueController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -182,6 +181,8 @@
     <Content Include="Views\Profiles\Details.cshtml" />
     <Content Include="Views\Profiles\Update.cshtml" />
     <Content Include="Views\Profiles\Index.cshtml" />
+    <Content Include="Views\Profiles\NotFound.cshtml" />
+    <Content Include="Views\Profiles\ListProfiles.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

@@ -65,7 +65,45 @@ namespace SocialNetwork.api.Controllers
             {
                 return InternalError(e);
             }
+        }
 
+
+        // GET: api/Profiles/getProfile/5
+        [HttpGet]
+        [Route("getProfile/{id:int}")]
+        [AllowAnonymous]
+        public async Task<IHttpActionResult> GetProfile(int id)
+        {
+            try
+            {
+                var accountId = User.Identity.GetUserId();
+                Profile profile = await _repository.GetByIDAsync(id);
+
+                return Ok(profile);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
+        }
+
+        // GET: api/Profiles/getListProfiles
+        [HttpGet]
+        [Route("listProfiles")]
+        [AllowAnonymous]
+        public async Task<IHttpActionResult> GetListProfiles()
+        {
+            try
+            {
+                var accountId = User.Identity.GetUserId();
+                ICollection<Profile> profiles = await _repository.GetAllAsync();
+
+                return Ok(profiles);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
         }
 
         // POST: api/Profiles
@@ -120,7 +158,6 @@ namespace SocialNetwork.api.Controllers
         [ResponseType(typeof(void))]
         public async Task<IHttpActionResult> UpdateProfileAsync()
         {
-            //var accountId = User.Identity.GetUserId();
             Profile profile = null;
             try
             {
@@ -176,7 +213,84 @@ namespace SocialNetwork.api.Controllers
         }
 
 
-        //helpers
+        #region controlFriends
+        [HttpPut]
+        [Route("AddFriend")]
+        [ResponseType(typeof(Profile))]
+        public async Task<IHttpActionResult> AddFriendAsync()
+        {
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                return BadRequest();
+            }
+            try
+            {
+                // Pega o perfil da conta
+                var accountId = User.Identity.GetUserId();
+                Profile profile = await _repository.GetByIDAccountAsync(accountId);
+
+
+                // Atraves do request, pega os dados do amigo
+                var result = await Request.Content.ReadAsMultipartAsync();
+                var requestJson = await result.Contents[0].ReadAsStringAsync();
+                Profile friend = JsonConvert.DeserializeObject<Profile>(requestJson);
+
+
+                // Adiciona o amigo
+                profile.Friends.Add(friend);
+                await _repository.UpdateAsync(profile);
+
+
+                //Retorno se OK
+                return Ok(profile);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
+
+        }
+
+        [HttpPost]
+        [Route("RemoveFriend")]
+        [ResponseType(typeof(Profile))]
+        public async Task<IHttpActionResult> RemoveFriendAsync()
+        {
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                return BadRequest();
+            }
+
+            try
+            {
+                // Pega o perfil da conta
+                var accountId = User.Identity.GetUserId();
+                Profile profile = await _repository.GetByIDAccountAsync(accountId);
+
+
+                // Atraves do request, pega os dados do amigo
+                var result = await Request.Content.ReadAsMultipartAsync();
+                var requestJson = await result.Contents[0].ReadAsStringAsync();
+                Profile friend = JsonConvert.DeserializeObject<Profile>(requestJson);
+
+
+                // Remove o amigo
+                profile.Friends.Remove(friend);
+                await _repository.UpdateAsync(profile);
+
+
+                //Retorno se OK
+                return Ok(profile);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
+
+        }
+        #endregion
+
+        #region Helpers
         private IHttpActionResult InternalError(Exception e)
         {
             Console.Write(e.Message);
@@ -240,13 +354,7 @@ namespace SocialNetwork.api.Controllers
             return string.Format("{0:10}_{1}{2}", DateTime.Now.Ticks, Guid.NewGuid(), ext);
         }
 
-        /*protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _repository.Dispose();
-            }
-            base.Dispose(disposing);
-        }*/
+
+        #endregion
     }
 }

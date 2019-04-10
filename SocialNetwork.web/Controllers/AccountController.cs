@@ -71,7 +71,6 @@ namespace SocialNetwork.web.Controllers
                 using (var requestContent = new FormUrlEncodedContent(data))
                 {
                     var response = await client.PostAsync("Token", requestContent);
-
                     if (response.IsSuccessStatusCode)
                     {
                         var responseContent = await response.Content.ReadAsStringAsync();
@@ -79,11 +78,12 @@ namespace SocialNetwork.web.Controllers
 
                         Session.Add("access_token", tokenData["access_token"]);
                         string acess_token = Session["access_token"]?.ToString();
-                        return RedirectToAction("Details", "Profiles");
+                        return RedirectToAction("Index", "Profiles");
                     }
                     if (response.StatusCode == HttpStatusCode.BadRequest)
                     {
-                        return RedirectToAction("Register");
+                        return View();
+                        //return RedirectToAction("Register");
                     }
                     return View("Error");
                 }

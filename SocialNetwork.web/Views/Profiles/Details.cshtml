@@ -1,54 +1,36 @@
 ﻿@model SocialNetwork.web.Models.Profile.ProfileViewModel
 
 @{
-    ViewBag.Title = "Details";
+    ViewBag.Title = Model.FirstName + " " + Model.LastName;
 }
 
 <h2>Details</h2>
 
 <div>
-    <h4>Profile</h4>
+    <h4>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h4>
     <hr />
-    <dl class="dl-horizontal">
-
-        @Html.HiddenFor(model => model.Id)
-        @Html.HiddenFor(model => model.AccountId)
-        <dt>
-            @Html.DisplayNameFor(model => model.FirstName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.FirstName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.LastName)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.LastName)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.BirthDate)
-        </dt>
-
-        <dd>
-            @Html.DisplayFor(model => model.BirthDate)
-        </dd>
-
-        <dt>
-            @Html.DisplayNameFor(model => model.PictureUrl)
-        </dt>
-
-        <dd>
+    <div class="alert-info">
+        <div>
             <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 150px; height: 150px;" />
-        </dd>
+        </div>
+        <div>
+            <h5>@Html.DisplayNameFor(model => model.BirthDate)</h5>
+            <h5>@Html.DisplayFor(model => model.BirthDate)</h5>
+        </div>
+    </div>
 
-
-    </dl>
 </div>
+
 <p>
-    @Html.ActionLink("Atualizar perfil", "Update",  Model ) 
-    @Html.ActionLink("Apagar perfil", "Delete",  Model ) 
+    @if (!Model.IsFriend)
+    {
+        @Html.ActionLink("Adicionar aos amigos", "AddFriend", Model.Id)
+    }
+    @if (Model.IsFriend)
+    {
+        @Html.ActionLink("Remover dos amigos", "RemoveFriend", Model.Id)
+    }
 </p>
+
+@Html.HiddenFor(model => model.Id)
+@Html.HiddenFor(model => model.AccountId)

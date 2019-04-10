@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Data.Entity;
+using System.Collections.Generic;
 
 namespace SocialNetwork.core.Models
 {
@@ -13,9 +13,7 @@ namespace SocialNetwork.core.Models
 
         public string AccountId { get; set; }
 
-        public static implicit operator Profile(string v)
-        {
-            throw new NotImplementedException();
-        }
+        public ICollection<Profile> Friends { get; set; }
+
     }
 }

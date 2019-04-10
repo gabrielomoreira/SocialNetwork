@@ -1,11 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace SocialNetwork.web.Models.Profile
 {
     public class ProfileViewModel
     {
-
         public int Id{ get; set; }
 
         [Required]
@@ -27,5 +27,11 @@ namespace SocialNetwork.web.Models.Profile
 
         public string AccountId { get; set; }
 
+        public ICollection<ProfileViewModel> Friends { get; set; }
+
+        public bool IsFriend { get; set; }
+        
+
     }
+
 }

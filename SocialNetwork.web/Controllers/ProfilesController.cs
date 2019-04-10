@@ -9,6 +9,7 @@ using System.Linq;
 using System.Net;
 using SocialNetwork.web.Models.Profile;
 using SocialNetwork.core.Models;
+using System.Collections.Generic;
 
 namespace SocialNetwork.web.Controllers
 {
@@ -19,13 +20,13 @@ namespace SocialNetwork.web.Controllers
 
         // GET: Profiles
         [HttpGet]
-        [Route(Name ="Details")]
-        public async Task<ActionResult> Details()
+        [Route(Name ="Index")]
+        public async Task<ActionResult> Index()
         {
             try
             {
                 string acess_token = Session["access_token"]?.ToString();
-                using (var client = new HttpClient())
+                using (HttpClient client = new HttpClient())
                 {
                     client.BaseAddress = UriAccount;
                     client.DefaultRequestHeaders.Accept.Clear();
@@ -71,10 +72,150 @@ namespace SocialNetwork.web.Controllers
             
         }
 
+        [HttpGet]
+        [Route(Name = "Details")]
+        public async Task<ActionResult> Details(int id)
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = UriAccount;
+
+                    var response = await client.GetAsync(string.Format("api/Profiles/getProfile/{0}", id));
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+
+                        if (responseContent == "null")
+                        {
+                            return RedirectToAction("NotFound", "Profiles");
+                        }
+
+                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContent);
+                        ProfileViewModel profileView = new ProfileViewModel()
+                        {
+                            Id = profile.Id,
+                            FirstName = profile.FirstName,
+                            LastName = profile.LastName,
+                            BirthDate = profile.BirthDate,
+                            PictureUrl = profile.PictureUrl,
+                            AccountId = profile.AccountId,
+                            IsFriend = false
+                        };
+                        /*
+                        if (profile.Friends != null)
+                        { 
+                            foreach (Profile item in profile.Friends)
+                            {
+                                profileView.Friends.Add(new ProfileViewModel()
+                                {
+                                    Id = item.Id,
+                                    FirstName = item.FirstName,
+                                    LastName = item.LastName,
+                                    BirthDate = item.BirthDate,
+                                    PictureUrl = item.PictureUrl,
+                                    AccountId = item.AccountId
+                                });
+                            }
+                            profileView.IsFriend = (profileView.Friends.Where(friend => friend.Id == id) != null);
+                        }
+
+                        
+                    */
+                        return View(profileView);
+                    }
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        return RedirectToAction("Login", "Account");
+                    }
+
+
+                    return View("Error");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.Message);
+                return View("Error");
+            }
+
+        }
+
+        [HttpGet]
+        [Route(Name = "ListProfiles")]
+        public async Task<ActionResult> ListProfiles()
+        {
+            try
+            {
+                using (var client = new HttpClient())
+                {
+                    client.BaseAddress = UriAccount;
+
+                    var response = await client.GetAsync("api/Profiles/listProfiles");
+                    if (response.IsSuccessStatusCode)
+                    {
+                        var responseContent = await response.Content.ReadAsStringAsync();
+
+                        if (responseContent == "null")
+                        {
+                            return RedirectToAction("Error");
+                        }
+
+                        ICollection<Profile> profiles = JsonConvert.DeserializeObject<ICollection<Profile>>(responseContent);
+                        ICollection<ProfileViewModel> profileViewModel = new List<ProfileViewModel>();
+                        foreach(Profile profile in profiles)
+                        {
+                            ProfileViewModel profileVM = new ProfileViewModel()
+                            {
+                                Id = profile.Id,
+                                AccountId = profile.AccountId,
+                                FirstName = profile.FirstName,
+                                LastName = profile.LastName,
+                                BirthDate = profile.BirthDate,
+                                PictureUrl = profile.PictureUrl
+
+                            };
+
+                            profileViewModel.Add(profileVM);
+                        }
+
+                        return View(profileViewModel);
+                    }
+                    if (response.StatusCode == HttpStatusCode.Unauthorized)
+                    {
+                        return RedirectToAction("Login", "Account");
+                    }
+
+
+                    return View("Error");
+                }
+            }
+            catch (Exception e)
+            {
+                Console.Write(e.Message);
+                return View("Error");
+            }
+
+        }
+
+
+
+        [HttpGet]
+        public ActionResult NotFound()
+        {
+            return View("NotFound");
+        }
+
         // GET: Profiles/Create
         [HttpGet]
         public ActionResult Create()
         {
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Register", "Account");
+            }
             return View();
         }
 
@@ -139,7 +280,7 @@ namespace SocialNetwork.web.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Details", "Profiles");
+                        return RedirectToAction("Index", "Profiles");
                     }
                     else
                     {
@@ -223,17 +364,14 @@ namespace SocialNetwork.web.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("Details", "Profiles");
+                        return RedirectToAction("Index", "Profiles");
                     }
                     else
                     {
                         return View("Error");
                     }
-
                 }
             }
-
-
         }
 
         // GET: Profiles/Delete/5
@@ -281,7 +419,86 @@ namespace SocialNetwork.web.Controllers
                 }
             }
         }
-        
+
+        [HttpGet, ActionName("AddFriend")]
+        public ActionResult AddFriendGetAction()
+        {
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+            return View();
+        }
+
+
+        [HttpPost, ActionName("AddFriend")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> AddFriendAction(ProfileViewModel model)
+        {
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            using (var client = new HttpClient())
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    client.BaseAddress = UriAccount;
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+
+                    content.Add(new StringContent(JsonConvert.SerializeObject(model)));
+
+                    var response = await client.PostAsync("api/Profiles/AddFriend", content);
+
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    ProfileViewModel profile = JsonConvert.DeserializeObject<ProfileViewModel>(responseContent);
+
+                    if (response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Details", "Profiles");
+                    }
+                    else
+                    {
+                        return View("Error");
+                    }
+
+                }
+            }
+            
+        }
+
+        [HttpGet, ActionName("RemoveFriend")]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult> RemoveFriendAction(ProfileViewModel model)
+        {
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Login", "Acount");
+            }
+
+            using (var client = new HttpClient())
+            {
+                client.BaseAddress = UriAccount;
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+
+                var response = await client.GetAsync("api/Profiles/RemoveFriend");
+                if (response.IsSuccessStatusCode)
+                {
+                    return View("Details", "Profiles");
+                }
+                else
+                {
+                    return View("Error");
+                }
+            }
+        }
+
         /*protected override void Dispose(bool disposing)
         {
             if (disposing)

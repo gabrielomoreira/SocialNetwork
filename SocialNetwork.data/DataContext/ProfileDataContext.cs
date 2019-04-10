@@ -13,5 +13,6 @@ namespace SocialNetwork.data.ProfileDataContext
         {
             return new DataContext();
         }
+
     }
 }

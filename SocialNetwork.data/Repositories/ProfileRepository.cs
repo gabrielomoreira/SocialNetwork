@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Threading.Tasks;
 using SocialNetwork.core.Models;
@@ -74,8 +73,7 @@ namespace SocialNetwork.data.Repositories
             return _dataContextAsync.Profiles.Count(profile => profile.Id == id) > 0;
         }
 
-
-
+       
     }
 
 }

@@ -1,53 +1,31 @@
-﻿@model IEnumerable<SocialNetwork.web.Models.Profile.ProfileViewModel>
+﻿@model SocialNetwork.web.Models.Profile.ProfileViewModel
 
 @{
-    ViewBag.Title = "Index";
+    ViewBag.Title = Model.FirstName + " " + Model.LastName;
 }
 
-<h2>Index</h2>
+<h2>Details</h2>
 
+<div>
+    <h4>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h4>
+    <hr />
+    <div class="alert-info">
+        <div>
+            <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 150px; height: 150px;" />
+        </div>
+        <div>
+            <h5>@Html.DisplayNameFor(model => model.BirthDate)</h5>
+            <h5>@Html.DisplayFor(model => model.BirthDate)</h5>
+        </div>
+    </div>
 
-<table class="table">
-    <tr>
-        <th>
-            @Html.DisplayNameFor(model => model.FirstName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.LastName)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.BirthDate)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.PictureUrl)
-        </th>
-        <th>
-            @Html.DisplayNameFor(model => model.AccountId)
-        </th>
-        <th></th>
-    </tr>
+</div>
 
-@foreach (var item in Model) {
-    <tr>
-        <td>
-            @Html.DisplayFor(modelItem => item.FirstName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.LastName)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.BirthDate)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.PictureUrl)
-        </td>
-        <td>
-            @Html.DisplayFor(modelItem => item.AccountId)
-        </td>
-        <td>
-            @Html.ActionLink("Update", "Update") | @Html.ActionLink("Details", "Details")
-        </td>
-    </tr>
-}
+<p>
+    @Html.ActionLink("Atualizar perfil", "Update", Model)
+    <!-- Html.ActionLink("Apagar perfil", "Delete", Model) -->
 
-</table>
+</p>
+
+@Html.HiddenFor(model => model.Id)
+@Html.HiddenFor(model => model.AccountId)
