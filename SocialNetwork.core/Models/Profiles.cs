@@ -7,6 +7,12 @@ namespace SocialNetwork.core.Models
 {
     public class Profile
     {
+        public Profile()
+        {
+            Followers = new HashSet<Profile>();
+            Following = new HashSet<Profile>();
+        }
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
@@ -17,7 +23,8 @@ namespace SocialNetwork.core.Models
 
         public string AccountId { get; set; }
 
-        public virtual ICollection<Profile> Friends { get; set; }
+        public virtual ICollection<Profile> Followers { get; set; }
+        public virtual ICollection<Profile> Following { get; set; }
 
     }
 }

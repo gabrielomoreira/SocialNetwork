@@ -27,7 +27,8 @@ namespace SocialNetwork.web.Models.Profile
 
         public string AccountId { get; set; }
 
-        public ICollection<ProfileViewModel> Friends { get; set; }
+        public virtual ICollection<ProfileViewModel> Followers { get; set; }
+        public virtual ICollection<ProfileViewModel> Following { get; set; }
 
         public bool IsFriend { get; set; }
         

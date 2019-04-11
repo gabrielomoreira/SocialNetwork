@@ -37,7 +37,7 @@ namespace SocialNetwork.data.Repositories
 
         public async Task<ICollection<Profile>> GetAllAsync()
         {
-            List<Profile> profiles = await _dataContextAsync.Profiles.ToListAsync();
+            ICollection<Profile> profiles = await _dataContextAsync.Profiles.ToListAsync();
             if (profiles.Count > 0)
             {
                 return profiles;

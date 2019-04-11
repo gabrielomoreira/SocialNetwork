@@ -14,5 +14,15 @@ namespace SocialNetwork.data.ProfileDataContext
             return new DataContext();
         }
 
+        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<Profile>()
+                .HasMany(m => m.Followers)
+                .WithMany(p => p.Following)
+                .Map(w => 
+                w.ToTable("Profile_Follow").MapLeftKey("ProfileId").MapRightKey("FollowerID"));
+
+            base.OnModelCreating(modelBuilder);
+        }
     }
 }

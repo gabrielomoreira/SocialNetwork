@@ -26,7 +26,6 @@ namespace SocialNetwork.web.Controllers
         {
             try
             {
-               
                 string acess_token = Session["access_token"]?.ToString();
                 using (HttpClient client = new HttpClient())
                 {
@@ -152,7 +151,7 @@ namespace SocialNetwork.web.Controllers
                             BirthDate = profile.BirthDate,
                             PictureUrl = profile.PictureUrl
                         };
-                        profileAccountProfile.Friends = new List<ProfileViewModel>();
+                        profileAccountProfile.Following = new List<ProfileViewModel>();
 
                         // Se o perfil da busca é o mesmo do perfil da conta, redireciona para index
                         if (profile.Id == profileView.Id)
@@ -162,7 +161,7 @@ namespace SocialNetwork.web.Controllers
 
                         // Adiciona os amigos para a conta
                         ICollection<Profile> friendsAccount = new List<Profile>();
-                        foreach(Profile friend in profile.Friends)
+                        foreach(Profile friend in profile.Followers)
                         {
                             ProfileViewModel friendView = new ProfileViewModel()
                             {
@@ -174,11 +173,11 @@ namespace SocialNetwork.web.Controllers
                             };
 
                             // popula a lista de amigos
-                            profileAccountProfile.Friends.Add(friendView);
+                            profileAccountProfile.Following.Add(friendView);
                         }
 
                         // verifica se existe um amigo da lista de amigos para retornar se é ou não amigo
-                        profileView.IsFriend = profileAccountProfile.Friends.Where(f => f.Id == profileView.Id).Count() == 1;
+                        profileView.IsFriend = profileAccountProfile.Following.Where(f => f.Id == profileView.Id).Count() == 1;
 
 
                     }
@@ -212,10 +211,9 @@ namespace SocialNetwork.web.Controllers
                     client.BaseAddress = UriAccount;
 
                     var response = await client.GetAsync("api/Profiles/listProfiles");
+                    var responseContent = await response.Content.ReadAsStringAsync();
                     if (response.IsSuccessStatusCode)
                     {
-                        var responseContent = await response.Content.ReadAsStringAsync();
-
                         if (responseContent == "null")
                         {
                             return View(profilesViewModel);
@@ -243,6 +241,10 @@ namespace SocialNetwork.web.Controllers
                     if (response.StatusCode == HttpStatusCode.Unauthorized)
                     {
                         return RedirectToAction("Login", "Account");
+                    }
+                    if (response.StatusCode == HttpStatusCode.InternalServerError)
+                    {
+                        return RedirectToAction("Error");
                     }
                 }
 
@@ -292,7 +294,7 @@ namespace SocialNetwork.web.Controllers
 
                         foreach (ProfileViewModel friend in profilesViewModel)
                         {
-                            friend.IsFriend = profileAcc.Friends.Any(x => x.Id == friend.Id);
+                            friend.IsFriend = profileAcc.Followers.Any(x => x.Id == friend.Id);
                         }
                         
                         

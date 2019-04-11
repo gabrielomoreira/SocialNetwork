@@ -222,20 +222,19 @@ namespace SocialNetwork.api.Controllers
             try
             {
                 // Pega o perfil da conta
-                var accountId = User.Identity.GetUserId();
-                Profile profile = await _repository.GetByIDAccountAsync(accountId);
+                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
 
 
                 // Atraves do request, pega os dados do amigo
                 Profile friend = await _repository.GetByIDAsync(id);
 
-                if (profile.Friends == null)
+                if (profile.Following == null)
                 {
-                    profile.Friends = new List<Profile>();
+                    profile.Following = new List<Profile>();
                 }
 
                 // Adiciona o amigo
-                profile.Friends.Add(friend);
+                profile.Following.Add(friend);
                 await _repository.UpdateAsync(profile);
 
 
@@ -258,20 +257,19 @@ namespace SocialNetwork.api.Controllers
             {
 
                 // Pega o perfil da conta
-                var accountId = User.Identity.GetUserId();
-                Profile profile = await _repository.GetByIDAccountAsync(accountId);
+                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
 
 
                 // Atraves do request, pega os dados do amigo
                 Profile friend = await _repository.GetByIDAsync(id);
 
-                if (profile.Friends == null)
+                if (profile.Following == null)
                 {
-                    profile.Friends = new List<Profile>();
+                    profile.Following = new List<Profile>();
                 }
 
                 // Adiciona o amigo
-                profile.Friends.Remove(friend);
+                profile.Following.Remove(friend);
                 await _repository.UpdateAsync(profile);
                 
 
