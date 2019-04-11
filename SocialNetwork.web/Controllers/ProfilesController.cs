@@ -105,7 +105,33 @@ namespace SocialNetwork.web.Controllers
                                 PictureUrl = profile.PictureUrl,
                                 AccountId = profile.AccountId,
                                 IsFriend = false // padrão
-                            };
+
+                                foreach (Profile follower in profile.Followers)
+                            {
+                                profileView.Followers.Add(new ProfileViewModel()
+                                {
+                                    Id = follower.Id,
+                                    AccountId = follower.AccountId,
+                                    FirstName = follower.FirstName,
+                                    LastName = follower.LastName,
+                                    BirthDate = follower.BirthDate,
+                                    PictureUrl = follower.PictureUrl
+                                });
+                            }
+
+                            foreach (Profile following in profile.Following)
+                            {
+
+                                profileView.Following.Add(new ProfileViewModel()
+                                {
+                                    Id = following.Id,
+                                    AccountId = following.AccountId,
+                                    FirstName = following.FirstName,
+                                    LastName = following.LastName,
+                                    BirthDate = following.BirthDate,
+                                    PictureUrl = following.PictureUrl
+                                });
+                            }
                         }
                     }
                     else
@@ -137,50 +163,28 @@ namespace SocialNetwork.web.Controllers
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
 
+
+
+
                     var responseAccountProfile = await client.GetAsync("api/Profiles/getProfileByAccount");
                     if (responseAccountProfile.IsSuccessStatusCode)
                     {
                         var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
 
-                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
-                        ProfileViewModel profileAccountProfile = new ProfileViewModel()
-                        {
-                            Id = profile.Id,
-                            FirstName = profile.FirstName,
-                            LastName = profile.LastName,
-                            BirthDate = profile.BirthDate,
-                            PictureUrl = profile.PictureUrl
-                        };
-                        profileAccountProfile.Following = new List<ProfileViewModel>();
+                        Profile profileAccount = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
 
                         // Se o perfil da busca é o mesmo do perfil da conta, redireciona para index
-                        if (profile.Id == profileView.Id)
+                        if (profileAccount.Id == profileView.Id)
                         {
                             return RedirectToAction("Index", "Profiles");
                         }
 
-                        // Adiciona os amigos para a conta
-                        ICollection<Profile> friendsAccount = new List<Profile>();
-                        foreach(Profile friend in profile.Followers)
-                        {
-                            ProfileViewModel friendView = new ProfileViewModel()
-                            {
-                                Id = friend.Id,
-                                FirstName = friend.FirstName,
-                                LastName = friend.LastName,
-                                BirthDate = friend.BirthDate,
-                                PictureUrl = friend.PictureUrl
-                            };
-
-                            // popula a lista de amigos
-                            profileAccountProfile.Following.Add(friendView);
-                        }
-
                         // verifica se existe um amigo da lista de amigos para retornar se é ou não amigo
-                        profileView.IsFriend = profileAccountProfile.Following.Where(f => f.Id == profileView.Id).Count() == 1;
+                        profileView.IsFriend = profileView.Following.Where(f => f.Id == profileView.Id).Count() == 1;
 
 
                     }
+
                     // se não tiver sucesso no retorno da conta de perfil, deve verificar a causa de retorno não experado, por isso lança uma excessão
                     if (!responseAccountProfile.IsSuccessStatusCode)
                     {
@@ -234,6 +238,33 @@ namespace SocialNetwork.web.Controllers
                                 IsFriend = false
                             };
 
+                            foreach (Profile follower in profile.Followers)
+                            {
+                                profileVM.Followers.Add(new ProfileViewModel()
+                                {
+                                    Id = follower.Id,
+                                    AccountId = follower.AccountId,
+                                    FirstName = follower.FirstName,
+                                    LastName = follower.LastName,
+                                    BirthDate = follower.BirthDate,
+                                    PictureUrl = follower.PictureUrl
+                                });
+                            }
+
+                            foreach (Profile following in profile.Following)
+                            {
+     
+                                profileVM.Following.Add(new ProfileViewModel()
+                                {
+                                    Id = following.Id,
+                                    AccountId = following.AccountId,
+                                    FirstName = following.FirstName,
+                                    LastName = following.LastName,
+                                    BirthDate = following.BirthDate,
+                                    PictureUrl = following.PictureUrl
+                                });
+                            }
+
                             profilesViewModel.Add(profileVM);
                         }
                         
@@ -271,33 +302,19 @@ namespace SocialNetwork.web.Controllers
                     {
                         var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
 
-                        // Verifica se existe perfil da conta (nesse ponte, não é experado isso)
-                        if (responseContentAccountProfile == "null")
-                        {
-                            throw new Exception("Perfil da conta não encontrada");
-                        }
-
                         Profile profileAcc = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
 
                         // Remove o perfil da lista, para não aparecer na view
                         profilesViewModel = profilesViewModel.Where(x => x.Id != profileAcc.Id).ToList();
 
-                        ProfileViewModel profileAccount = new ProfileViewModel()
-                        {
-                            Id = profileAcc.Id,
-                            FirstName = profileAcc.FirstName,
-                            LastName = profileAcc.LastName,
-                            BirthDate = profileAcc.BirthDate,
-                            PictureUrl = profileAcc.PictureUrl,
-                            AccountId = profileAcc.AccountId
-                        };
-
                         foreach (ProfileViewModel friend in profilesViewModel)
                         {
-                            friend.IsFriend = profileAcc.Followers.Any(x => x.Id == friend.Id);
+                            friend.IsFriend = false;
+                            if (profileAcc.Following.Count() > 0)
+                            {
+                                friend.IsFriend = profileAcc.Following.Any(x => x.Id == friend.Id);
+                            }
                         }
-                        
-                        
                     }
 
                     return View(profilesViewModel);

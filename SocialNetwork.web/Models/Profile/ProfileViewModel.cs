@@ -6,6 +6,13 @@ namespace SocialNetwork.web.Models.Profile
 {
     public class ProfileViewModel
     {
+
+        public ProfileViewModel()
+        {
+            Followers = new HashSet<ProfileViewModel>();
+            Following = new HashSet<ProfileViewModel>();
+        }
+
         public int Id{ get; set; }
 
         [Required]

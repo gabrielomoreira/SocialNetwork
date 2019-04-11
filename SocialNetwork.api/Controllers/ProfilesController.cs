@@ -56,8 +56,7 @@ namespace SocialNetwork.api.Controllers
         {
             try
             {
-                var accountId = User.Identity.GetUserId();
-                Profile profile = await _repository.GetByIDAccountAsync(accountId);
+                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
 
                 return Ok(profile);
             }
@@ -76,7 +75,6 @@ namespace SocialNetwork.api.Controllers
         {
             try
             {
-                var accountId = User.Identity.GetUserId();
                 Profile profile = await _repository.GetByIDAsync(id);
 
                 return Ok(profile);
@@ -95,7 +93,6 @@ namespace SocialNetwork.api.Controllers
         {
             try
             {
-                var accountId = User.Identity.GetUserId();
                 ICollection<Profile> profiles = await _repository.GetAllAsync();
 
                 return Ok(profiles);
@@ -228,11 +225,6 @@ namespace SocialNetwork.api.Controllers
                 // Atraves do request, pega os dados do amigo
                 Profile friend = await _repository.GetByIDAsync(id);
 
-                if (profile.Following == null)
-                {
-                    profile.Following = new List<Profile>();
-                }
-
                 // Adiciona o amigo
                 profile.Following.Add(friend);
                 await _repository.UpdateAsync(profile);
@@ -255,18 +247,12 @@ namespace SocialNetwork.api.Controllers
         {
             try
             {
-
                 // Pega o perfil da conta
                 Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
 
 
                 // Atraves do request, pega os dados do amigo
                 Profile friend = await _repository.GetByIDAsync(id);
-
-                if (profile.Following == null)
-                {
-                    profile.Following = new List<Profile>();
-                }
 
                 // Adiciona o amigo
                 profile.Following.Remove(friend);
