@@ -105,8 +105,9 @@ namespace SocialNetwork.web.Controllers
                                 PictureUrl = profile.PictureUrl,
                                 AccountId = profile.AccountId,
                                 IsFriend = false // padrão
+                            };
 
-                                foreach (Profile follower in profile.Followers)
+                            foreach (Profile follower in profile.Followers)
                             {
                                 profileView.Followers.Add(new ProfileViewModel()
                                 {
@@ -162,10 +163,7 @@ namespace SocialNetwork.web.Controllers
                     client.BaseAddress = UriAccount;
                     client.DefaultRequestHeaders.Accept.Clear();
                     client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
-
-
-
-
+                    
                     var responseAccountProfile = await client.GetAsync("api/Profiles/getProfileByAccount");
                     if (responseAccountProfile.IsSuccessStatusCode)
                     {
