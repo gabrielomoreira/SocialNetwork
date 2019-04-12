@@ -13,7 +13,6 @@ using System.Collections.Generic;
 
 namespace SocialNetwork.web.Controllers
 {
-
     public class ProfilesController : Controller
     {
         readonly Uri UriAccount = new Uri("http://localhost:2001/");
@@ -53,6 +52,33 @@ namespace SocialNetwork.web.Controllers
                             PictureUrl = profile.PictureUrl,
                             AccountId = profile.AccountId
                         };
+
+                        foreach (Profile follower in profile.Followers)
+                        {
+                            profileView.Followers.Add(new ProfileViewModel()
+                            {
+                                Id = follower.Id,
+                                AccountId = follower.AccountId,
+                                FirstName = follower.FirstName,
+                                LastName = follower.LastName,
+                                BirthDate = follower.BirthDate,
+                                PictureUrl = follower.PictureUrl
+                            });
+                        }
+
+                        foreach (Profile following in profile.Following)
+                        {
+
+                            profileView.Following.Add(new ProfileViewModel()
+                            {
+                                Id = following.Id,
+                                AccountId = following.AccountId,
+                                FirstName = following.FirstName,
+                                LastName = following.LastName,
+                                BirthDate = following.BirthDate,
+                                PictureUrl = following.PictureUrl
+                            });
+                        }
 
                         return View(profileView);
                     }
@@ -401,9 +427,7 @@ namespace SocialNetwork.web.Controllers
                     }
 
                     var response = await client.PostAsync("api/Profiles/Create", content);
-
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    ProfileViewModel profile = JsonConvert.DeserializeObject<ProfileViewModel>(responseContent);
+                    
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -485,9 +509,7 @@ namespace SocialNetwork.web.Controllers
                     }
 
                     var response = await client.PutAsync("api/Profiles/Update", content);
-
-                    var responseContent = await response.Content.ReadAsStringAsync();
-                    ProfileViewModel profile = JsonConvert.DeserializeObject<ProfileViewModel>(responseContent);
+                    
 
                     if (response.IsSuccessStatusCode)
                     {
@@ -611,14 +633,5 @@ namespace SocialNetwork.web.Controllers
             }
         }
 
-        /*protected override void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                db.Dispose();
-            }
-            base.Dispose(disposing);
-        }
-        */
     }
 }

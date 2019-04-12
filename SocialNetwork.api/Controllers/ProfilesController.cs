@@ -35,6 +35,22 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
+        // GET: api/Profiles/getByIdAccount/5
+        [HttpGet]
+        [Route("getProfileByAccount")]
+        public async Task<IHttpActionResult> GetProfileByIdAsync()
+        {
+            try
+            {
+                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
+                return Ok(profile);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
+        }
+
         // GET: api/Profiles
         [HttpGet]
         [Route("getAll")]
@@ -48,24 +64,6 @@ namespace SocialNetwork.api.Controllers
             }
             return profiles.ToList();
         }
-
-        // GET: api/Profiles/getByIdAccount/5
-        [HttpGet]
-        [Route("getProfileByAccount")]
-        public async Task<IHttpActionResult> GetProfileByIdAsync()
-        {
-            try
-            {
-                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
-
-                return Ok(profile);
-            }
-            catch (Exception e)
-            {
-                return InternalError(e);
-            }
-        }
-
 
         // GET: api/Profiles/getProfile/5
         [HttpGet]
@@ -116,7 +114,6 @@ namespace SocialNetwork.api.Controllers
 
             try
             {
-                
                 var result = await Request.Content.ReadAsMultipartAsync();
 
                 var requestJson = await result.Contents[0].ReadAsStringAsync();
@@ -206,7 +203,6 @@ namespace SocialNetwork.api.Controllers
             {
                 return InternalError(e);
             }
-
         }
 
 

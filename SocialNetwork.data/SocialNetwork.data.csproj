@@ -51,6 +51,7 @@
     <Compile Include="DataContext\ProfileDataContext.cs" />
     <Compile Include="Interfaces\IRepository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\AlbumRepository.cs" />
     <Compile Include="Repositories\ProfileRepository.cs" />
   </ItemGroup>
   <ItemGroup>

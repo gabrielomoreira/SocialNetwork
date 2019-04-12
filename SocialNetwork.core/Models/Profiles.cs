@@ -26,5 +26,8 @@ namespace SocialNetwork.core.Models
         public virtual ICollection<Profile> Followers { get; set; }
         public virtual ICollection<Profile> Following { get; set; }
 
+        public virtual ICollection<Albuns> Albuns { get; set; }
+
+        public virtual ICollection<Publications> Publication { get; set; }
     }
 }

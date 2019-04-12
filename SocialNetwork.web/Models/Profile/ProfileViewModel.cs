@@ -41,8 +41,35 @@ namespace SocialNetwork.web.Models.Profile
         public virtual ICollection<ProfileViewModel> Following { get; set; }
 
         public bool IsFriend { get; set; }
-        
 
+    }
+
+    public class AlbumViewModel
+    {
+        public AlbumViewModel()
+        {
+            Pictures = new HashSet<PictureViewModel>();
+        }
+
+        public int Id { get; set; }
+
+        [Display(Name = "Description")]
+        public string Description { get; set; }
+
+        [Display(Name = "Pictures")]
+        public virtual ICollection<PictureViewModel> Pictures { get; set; }
+    }
+
+    public class PictureViewModel
+    {
+
+        public int Id { get; set; }
+
+        [Display(Name = "Description")]
+        public string Description { get; set; }
+
+        [Display(Name = "Picture")]
+        public string PictureUrl { get; set; }
     }
 
 }

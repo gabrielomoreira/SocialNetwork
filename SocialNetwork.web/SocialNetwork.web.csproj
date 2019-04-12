@@ -128,6 +128,7 @@
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\AlbumProfileController.cs" />
     <Compile Include="Controllers\ProfilesController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -180,9 +181,16 @@
     <Content Include="Views\Profiles\NotFound.cshtml" />
     <Content Include="Views\Profiles\ListProfiles.cshtml" />
     <Content Include="Views\Shared\_LoginPartial.cshtml" />
+    <Content Include="Views\AlbumProfile\Create.cshtml" />
+    <Content Include="Views\AlbumProfile\Delete.cshtml" />
+    <Content Include="Views\AlbumProfile\Details.cshtml" />
+    <Content Include="Views\AlbumProfile\Edit.cshtml" />
+    <Content Include="Views\AlbumProfile\Index.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
+    <Folder Include="Views\Profiles\Comments\" />
+    <Folder Include="Views\Profiles\Pictures\" />
     <Folder Include="Views\Value\" />
   </ItemGroup>
   <ItemGroup>
