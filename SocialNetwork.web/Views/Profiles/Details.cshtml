@@ -5,32 +5,80 @@
 }
 
 <div>
-    <h3>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h3>
     <hr />
-    <div class="alert-info">
-        <div>
-            <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 150px; height: 150px;" />
+    <div class="container">
+        <div class="col-md-3">
+            <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 100px;" />
         </div>
-        <div>
-            <h5>@Html.DisplayNameFor(model => model.BirthDate)</h5>
-            <h5>@Html.DisplayFor(model => model.BirthDate)</h5>
+        <div class="col-md-9">
+            <h3>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h3>
+            <h5>@Html.DisplayNameFor(model => model.BirthDate): @Html.DisplayFor(model => model.BirthDate)</h5>
+            <h5>Followers: @Model.Followers.Count  |  Following: @Model.Following.Count</h5>
+            @if (Session["access_token"] != null)
+            {
+                <div style="margin-top: 10px">
+                    @if (Model.IsFriend)
+                    {
+                        <p>@Html.ActionLink("Remover", "RemoveFriend", new { id = Model.Id })</p>
+                    }
+                    @if (!Model.IsFriend)
+                    {
+                        <p>@Html.ActionLink("Adicionar", "AddFriend", new { id = Model.Id })</p>
+                    }
+                </div>
+            }
+        </div>
+        <div class="col-md-9">
+
         </div>
     </div>
-
 </div>
 
-@if (Session["access_token"] != null)
-{
-    <p>
-        @if (!Model.IsFriend)
-        {
-            @Html.ActionLink("Adicionar", "AddFriend", new { id = Model.Id })
-        }
-        @if (Model.IsFriend)
-        {
-            @Html.ActionLink("Remover", "RemoveFriend", new { id = Model.Id })
-        }
-    </p>
-}
 
 
+    <div class="container" style="margin-top: 50px;" >
+        @if (Model.Followers.Count > 0)
+        {
+            <div class="col-md-6">
+                <h4>Followers</h4>
+
+                <table class="table" id="tableFollowers">
+                    <tr>
+                        <th></th>
+                        <th>@Html.DisplayNameFor(model => model.FirstName)</th>
+                        <th></th>
+                    </tr>
+                    @foreach (var item in Model.Followers)
+                    {
+                        <tr>
+                            <td><img src="@Url.Content(item.PictureUrl)" alt="Profile Picture" style="width: 25px; height: 25px; border-radius:100px;" /></td>
+                            <td>@Html.DisplayFor(modelItem => item.FirstName) @Html.DisplayFor(modelItem => item.LastName)</td>
+                            <td>@Html.ActionLink("Detalhes", "Details", new { item.Id })</td>
+                        </tr>
+                    }
+                </table>
+            </div>
+        }
+        @if (Model.Following.Count > 0)
+        {
+            <div class="col-md-6">
+                <h4>Following</h4>
+
+                <table class="table" id="tableFollowing">
+                    <tr>
+                        <th></th>
+                        <th>@Html.DisplayNameFor(model => model.FirstName)</th>
+                        <th></th>
+                    </tr>
+                    @foreach (var item in Model.Following)
+                    {
+                    <tr>
+                        <td><img src="@Url.Content(item.PictureUrl)" alt="Profile Picture" style="width: 25px; height: 25px; border-radius:100px;" /></td>
+                        <td>@Html.DisplayFor(modelItem => item.FirstName) @Html.DisplayFor(modelItem => item.LastName)</td>
+                        <td>@Html.ActionLink("Detalhes", "Details", new { item.Id })</td>
+                    </tr>
+                    }
+                </table>
+            </div>
+        }
+    </div>

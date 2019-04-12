@@ -5,23 +5,23 @@
 }
 
 <div>
-    <h3>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h3>
     <hr />
-    <div class="alert-info">
-        <div>
-            <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 150px; height: 150px;" />
+    <div class="container">
+        <div class="col-md-3">
+            <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 100px; height: 100px; border-radius: 100px;" />
         </div>
-        <div>
-            <h5>@Html.DisplayNameFor(model => model.BirthDate)</h5>
-            <h5>@Html.DisplayFor(model => model.BirthDate)</h5>
+        <div class="col-md-9">
+            <h4>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName) | @Html.ActionLink("Atualizar perfil", "Update", Model)</h4>
+            <h5>@Html.DisplayNameFor(model => model.BirthDate): @Html.DisplayFor(model => model.BirthDate)</h5>
+            <h5>Followers: @Model.Followers.Count  |  Following: @Model.Following.Count</h5>
+        </div>
+        <div class="col-md-9">
+
         </div>
     </div>
-
 </div>
 
-<p>
-    @Html.ActionLink("Atualizar perfil", "Update", Model)
-</p>
+
 
 @Html.HiddenFor(model => model.Id)
 @Html.HiddenFor(model => model.AccountId)

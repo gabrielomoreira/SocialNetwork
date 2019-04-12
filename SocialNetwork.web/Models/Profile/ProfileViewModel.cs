@@ -34,7 +34,10 @@ namespace SocialNetwork.web.Models.Profile
 
         public string AccountId { get; set; }
 
+        [Display(Name = "Followers")]
         public virtual ICollection<ProfileViewModel> Followers { get; set; }
+
+        [Display(Name = "Following")]
         public virtual ICollection<ProfileViewModel> Following { get; set; }
 
         public bool IsFriend { get; set; }
