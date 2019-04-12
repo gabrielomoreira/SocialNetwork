@@ -19,11 +19,11 @@
                 <div style="margin-top: 10px">
                     @if (Model.IsFriend)
                     {
-                        <p>@Html.ActionLink("Remover", "RemoveFriend", new { id = Model.Id })</p>
+                        <p>@Html.ActionLink("Unfollow", "RemoveFriend", new { id = Model.Id })</p>
                     }
                     @if (!Model.IsFriend)
                     {
-                        <p>@Html.ActionLink("Adicionar", "AddFriend", new { id = Model.Id })</p>
+                        <p>@Html.ActionLink("Follow", "AddFriend", new { id = Model.Id })</p>
                     }
                 </div>
             }
