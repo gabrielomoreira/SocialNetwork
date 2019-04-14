@@ -1,14 +1,10 @@
-﻿<!-- using Microsoft.AspNet.Identit -->
-@if (Session["access_token"] != null)
+﻿@if (Session["access_token"] != null)
 {
     using (Html.BeginForm("LogOff", "Account", FormMethod.Post, new { id = "logoutForm", @class = "navbar-right" }))
     {
         @Html.AntiForgeryToken()
 
         <ul class="nav navbar-nav navbar-right">
-            <li>
-                Wellcome!!
-            </li>
             <li><a href="javascript:document.getElementById('logoutForm').submit()">Log off</a></li>
         </ul>
     }

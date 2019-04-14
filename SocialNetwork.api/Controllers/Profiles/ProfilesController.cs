@@ -74,7 +74,6 @@ namespace SocialNetwork.api.Controllers
             try
             {
                 Profile profile = await _repository.GetByIDAsync(id);
-
                 return Ok(profile);
             }
             catch (Exception e)
@@ -121,7 +120,7 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    model.PictureUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
+                    model.PictureProfileUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
                 }
                 var accountId = User.Identity.GetUserId();
                 var profile = new Profile()
@@ -129,7 +128,7 @@ namespace SocialNetwork.api.Controllers
                     FirstName = model.FirstName,
                     LastName = model.LastName,
                     BirthDate = model.BirthDate,
-                    PictureUrl = model.PictureUrl,
+                    PictureProfileUrl = model.PictureProfileUrl,
                     AccountId = accountId
                 };
 
@@ -166,7 +165,7 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    profile.PictureUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
+                    profile.PictureProfileUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
                 }
                 await _repository.UpdateAsync(profile);
 

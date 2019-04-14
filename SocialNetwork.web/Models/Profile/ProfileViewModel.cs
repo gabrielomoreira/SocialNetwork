@@ -26,7 +26,7 @@ namespace SocialNetwork.web.Models.Profile
         [Required]
         [Display(Name = "Data de nascimento")]
         [DataType(DataType.Date)]
-        [DisplayFormat(ApplyFormatInEditMode = true, DataFormatString = "{0:dd/MM/yyyy}")]
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime BirthDate { get; set; }
 
         [Display(Name = "Imagem de perfil")]

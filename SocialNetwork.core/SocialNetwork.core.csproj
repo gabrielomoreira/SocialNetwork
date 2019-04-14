@@ -48,10 +48,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\Albuns.cs" />
-    <Compile Include="Models\Picture.cs" />
-    <Compile Include="Models\Profiles.cs" />
-    <Compile Include="Models\Publications.cs" />
+    <Compile Include="Entity\Pictures.cs" />
+    <Compile Include="Entity\Profiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

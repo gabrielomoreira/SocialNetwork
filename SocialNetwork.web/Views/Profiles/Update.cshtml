@@ -45,6 +45,7 @@
     <div class="form-group">
         @Html.LabelFor(model => model.PictureUrl, htmlAttributes: new { @class = "control-label col-md-2" })
         <div class="col-md-10">
+            <img src="@Url.Content(Model.PictureUrl)" alt="Profile Picture" style="width: 100px; height: 100px;" />
             <input class="form-control" type="file" id="ProfilePicture" name="ProfilePicture" />
         </div>
     </div>
@@ -54,6 +55,7 @@
             <input type="submit" value="Save" class="btn btn-default" />
         </div>
     </div>
+
 </div>
 }
 

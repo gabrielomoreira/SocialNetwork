@@ -13,21 +13,19 @@ namespace SocialNetwork.core.Models
             Following = new HashSet<Profile>();
         }
 
+        public string AccountId { get; set; } 
+
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDate { get; set; }
-        public string PictureUrl { get; set; }
-
-        public string AccountId { get; set; }
+        public string PictureProfileUrl { get; set; }
 
         public virtual ICollection<Profile> Followers { get; set; }
         public virtual ICollection<Profile> Following { get; set; }
 
-        public virtual ICollection<Albuns> Albuns { get; set; }
-
-        public virtual ICollection<Publications> Publication { get; set; }
+        
     }
 }
