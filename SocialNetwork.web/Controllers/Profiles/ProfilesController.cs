@@ -8,9 +8,9 @@ using Newtonsoft.Json;
 using System.IO;
 using System.Linq;
 using System.Net;
-using SocialNetwork.core.Models;
 using System.Collections.Generic;
 using SocialNetwork.web.Models.Profile;
+using SocialNetwork.core.ProfileEntity;
 #endregion
 
 namespace SocialNetwork.web.Controllers
@@ -40,7 +40,7 @@ namespace SocialNetwork.web.Controllers
                         return RedirectToAction("Create", "Profiles");
                     }
 
-                    Profile profile = JsonConvert.DeserializeObject<Profile>(responseContent);
+                    Profiles profile = JsonConvert.DeserializeObject<Profiles>(responseContent);
                     ProfileViewModel profileView = BuildProfileViewModel(profile);
 
                     return View(profileView);
@@ -62,6 +62,8 @@ namespace SocialNetwork.web.Controllers
             using (var client = new HttpClient())
             {
                 client.BaseAddress = UriAccount;
+                client.DefaultRequestHeaders.Accept.Clear();
+                
 
                 var response = await client.GetAsync(string.Format("api/Profiles/getProfile/{0}", id));
                 if (response.IsSuccessStatusCode)
@@ -70,8 +72,7 @@ namespace SocialNetwork.web.Controllers
 
                     if (responseContent != "null")
                     {
-                        Profile profile = JsonConvert.DeserializeObject<Profile>(responseContent);
-
+                        Profiles profile = JsonConvert.DeserializeObject<Profiles>(responseContent);
                         if (profile == null || string.IsNullOrEmpty(profile.FirstName))
                         {
                             return RedirectToAction("NotFound", "Profiles");
@@ -79,20 +80,44 @@ namespace SocialNetwork.web.Controllers
 
                         profileViewModel = BuildProfileViewModel(profile);
 
-                        // Se não tem um token, retorna a view do jeito que está
-                        if (string.IsNullOrEmpty(acess_token))
+                        // Se existe um token, verifica se é amigo
+                        if (!string.IsNullOrEmpty(acess_token))
                         {
-                            return View(profileViewModel);
+                            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+                            var responseAccount = await client.GetAsync("api/Profiles/getProfileByAccount");
+
+                            if (!responseAccount.IsSuccessStatusCode)
+                            {
+                                throw new Exception(responseAccount.StatusCode.ToString());
+                            }
+
+                            var responseContentAccountProfile = await responseAccount.Content.ReadAsStringAsync();
+
+                            Profiles profileAccount = JsonConvert.DeserializeObject<Profiles>(responseContentAccountProfile);
+
+                            // Se o perfil da busca é o mesmo do perfil da conta, redireciona para index
+                            if (profileAccount.Id == profileViewModel.Id)
+                            {
+                                return RedirectToAction("Index", "Profiles");
+                            }
+
+                            // verifica se existe um amigo da lista de amigos para retornar se é ou não amigo
+                            profileViewModel.IsFriend = profileViewModel.Followers.Where(f => f.Id == profileAccount.Id).Count() == 1;
                         }
+
+                        return View(profileViewModel);
+                    }
+                    else
+                    {
+                        return View("NotFound");
                     }
                 }
                 else
                 {
-                    // não precisa de autorização para verificar dados do amigo
                     return RedirectToAction("Error");
                 }
             }
-
+            /*
             // Dessa parte em diante precisa estar logado para pegar informações sensíveis
             using (var client = new HttpClient())
             {
@@ -103,10 +128,7 @@ namespace SocialNetwork.web.Controllers
 
                 var responseAccountProfile = await client.GetAsync("api/Profiles/getProfileByAccount");
 
-                /* se não tiver sucesso no retorno da conta de perfil, 
-                    * deve verificar a causa de retorno não experado (porque neste ponto é uma conta com perfil logado)
-                    * por isso lança uma excessão.
-                */
+
                 if (!responseAccountProfile.IsSuccessStatusCode)
                 {
                     throw new Exception(responseAccountProfile.StatusCode.ToString());
@@ -114,7 +136,7 @@ namespace SocialNetwork.web.Controllers
 
                 var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
 
-                Profile profileAccount = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
+                Profiles profileAccount = JsonConvert.DeserializeObject<Profiles>(responseContentAccountProfile);
 
                 // Se o perfil da busca é o mesmo do perfil da conta, redireciona para index
                 if (profileAccount.Id == profileViewModel.Id)
@@ -127,7 +149,7 @@ namespace SocialNetwork.web.Controllers
 
                 return View(profileViewModel);
             }
-
+        */
         }
 
         [HttpGet]
@@ -135,46 +157,42 @@ namespace SocialNetwork.web.Controllers
         {
             string acess_token = Session["access_token"]?.ToString();
             ICollection<ProfileViewModel> profilesViewModel = new List<ProfileViewModel>();
+
             using (var client = new HttpClient())
             {
                 client.BaseAddress = UriAccount;
 
-                var response = await client.GetAsync("api/Profiles/listProfiles");
+                var response = await client.GetAsync("api/Profiles/ListProfiles");
                 var responseContent = await response.Content.ReadAsStringAsync();
 
                 if (response.IsSuccessStatusCode)
                 {
-                    if (responseContent == "null")
-                    {
-                        return View(profilesViewModel);
-                    }
+                    ICollection<Profiles> profiles = JsonConvert.DeserializeObject<ICollection<Profiles>>(responseContent);
 
-                    ICollection<Profile> profiles = JsonConvert.DeserializeObject<ICollection<Profile>>(responseContent);
-
-                    foreach (Profile profile in profiles)
+                    foreach (Profiles profile in profiles)
                     {
                         ProfileViewModel profileVM = BuildProfileViewModel(profile);
                         profilesViewModel.Add(profileVM);
                     }
 
                 }
-                if (response.StatusCode == HttpStatusCode.Unauthorized)
+                else if (response.StatusCode == HttpStatusCode.Unauthorized)
                 {
                     return RedirectToAction("Login", "Account");
                 }
-                if (!response.IsSuccessStatusCode)
+                else
                 {
                     return RedirectToAction("Error");
                 }
-            }
 
-            // verifica se existe um token, para não retornar dados sensiveis
-            if (string.IsNullOrEmpty(acess_token))
-            {
-                return View(profilesViewModel);
+                if (string.IsNullOrEmpty(acess_token))
+                {
+                    return View(profilesViewModel);
+                }
+                
             }
-
-            //senão...
+            
+            // Procurar uma maneira mais ortodoxa para simplifcar
             //Remove perfil da conta da lista (caso esteja logado), uma vez que não faz sentiod retorna-lo
             using (var client = new HttpClient())
             {
@@ -189,7 +207,7 @@ namespace SocialNetwork.web.Controllers
                 {
                     var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
 
-                    Profile profileAcc = JsonConvert.DeserializeObject<Profile>(responseContentAccountProfile);
+                    Profiles profileAcc = JsonConvert.DeserializeObject<Profiles>(responseContentAccountProfile);
 
                     // Remove o perfil da lista, para não aparecer na view
                     profilesViewModel = profilesViewModel.Where(x => x.Id != profileAcc.Id).ToList();
@@ -404,7 +422,7 @@ namespace SocialNetwork.web.Controllers
         #endregion
 
         #region helpers
-        private ProfileViewModel BuildProfileViewModel(Profile profile)
+        private ProfileViewModel BuildProfileViewModel(Profiles profile)
         {
             ProfileViewModel profileVM = new ProfileViewModel()
             {
@@ -417,7 +435,7 @@ namespace SocialNetwork.web.Controllers
                 IsFriend = false // padrão
             };
 
-            foreach (Profile follower in profile.Followers)
+            foreach (Profiles follower in profile.Followers)
             {
                 profileVM.Followers.Add(new ProfileViewModel()
                 {
@@ -430,7 +448,7 @@ namespace SocialNetwork.web.Controllers
                 });
             }
 
-            foreach (Profile following in profile.Following)
+            foreach (Profiles following in profile.Following)
             {
 
                 profileVM.Following.Add(new ProfileViewModel()

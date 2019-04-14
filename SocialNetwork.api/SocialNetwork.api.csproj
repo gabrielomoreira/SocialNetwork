@@ -221,7 +221,8 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
     <Compile Include="Controllers\Accounts\AccountController.cs" />
-    <Compile Include="Controllers\Profiles\ProfilesController.cs" />
+    <Compile Include="Controllers\Profiles\AlbunsControllerApi.cs" />
+    <Compile Include="Controllers\Profiles\ProfilesControllerApi.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

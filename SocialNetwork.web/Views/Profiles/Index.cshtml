@@ -13,7 +13,7 @@
         <div class="col-md-9">
             <h4>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName) | @Html.ActionLink("Atualizar perfil", "Update", Model)</h4>
             <h5>@Html.DisplayNameFor(model => model.BirthDate): @Html.DisplayFor(model => model.BirthDate)</h5>
-            <h5>Followers: @Model.Followers.Count  |  Following: @Model.Following.Count</h5>
+            <h5>Following: @Model.Following.Count  |  Followers: @Model.Followers.Count</h5>
         </div>
     </div>
 </div>

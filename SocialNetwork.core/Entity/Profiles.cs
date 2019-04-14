@@ -1,31 +1,31 @@
-﻿using System;
+﻿using SocialNetwork.core.AlbumEntity;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SocialNetwork.core.Models
+namespace SocialNetwork.core.ProfileEntity
 {
-    public class Profile
+    public class Profiles
     {
-        public Profile()
+        public Profiles()
         {
-            Followers = new HashSet<Profile>();
-            Following = new HashSet<Profile>();
+            Followers = new HashSet<Profiles>();
+            Following = new HashSet<Profiles>();
         }
-
-        public string AccountId { get; set; } 
 
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
+        public string AccountId { get; set; } 
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public DateTime BirthDate { get; set; }
         public string PictureProfileUrl { get; set; }
 
-        public virtual ICollection<Profile> Followers { get; set; }
-        public virtual ICollection<Profile> Following { get; set; }
-
+        public virtual ICollection<Albuns> Albuns { get; set; }
+        public virtual ICollection<Profiles> Followers { get; set; }
+        public virtual ICollection<Profiles> Following { get; set; }
         
     }
 }

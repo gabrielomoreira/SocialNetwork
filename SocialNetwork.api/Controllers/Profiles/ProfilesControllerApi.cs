@@ -13,21 +13,20 @@ using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
-using SocialNetwork.core.Models;
-using SocialNetwork.data.Repositories;
+using SocialNetwork.core.ProfileEntity;
+using SocialNetwork.data.ProfileRepository;
 
 namespace SocialNetwork.api.Controllers
 {
-    [Authorize]
-    [RoutePrefix("api/Profiles")]
+    [Authorize, RoutePrefix("api/Profiles")]
     public class ProfilesController : ApiController
     {
-        private ProfileRepositoryAsync _repository;
+        private ProfilesRepositoryAsync _repository;
         private ProfilesController()
         {
             try
             {
-                _repository = new ProfileRepositoryAsync();
+                _repository = new ProfilesRepositoryAsync();
             }
             catch(Exception e)
             {
@@ -35,14 +34,14 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        // GET: api/Profiles/getByIdAccount/5
-        [HttpGet]
-        [Route("getProfileByAccount")]
-        public async Task<IHttpActionResult> GetProfileByIdAsync()
+        #region AllowAnonymous and/or Authorize
+        [AllowAnonymous]
+        [HttpGet, Route("getProfile/{id:int}")]
+        public async Task<IHttpActionResult> GetProfiles(int id)
         {
             try
             {
-                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
+                Profiles profile = await _repository.GetByIDAsync(id);
                 return Ok(profile);
             }
             catch (Exception e)
@@ -51,47 +50,15 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        // GET: api/Profiles
-        [HttpGet]
-        [Route("getAll")]
         [AllowAnonymous]
-        public async Task<ICollection<Profile>> GetProfilesAsync()
-        {
-            ICollection<Profile> profiles = await _repository.GetAllAsync();
-            if (profiles == null)
-            {
-                return null;
-            }
-            return profiles.ToList();
-        }
-
-        // GET: api/Profiles/getProfile/5
-        [HttpGet]
-        [Route("getProfile/{id:int}")]
-        [AllowAnonymous]
-        public async Task<IHttpActionResult> GetProfile(int id)
-        {
-            try
-            {
-                Profile profile = await _repository.GetByIDAsync(id);
-                return Ok(profile);
-            }
-            catch (Exception e)
-            {
-                return InternalError(e);
-            }
-        }
-
-        // GET: api/Profiles/getListProfiles
-        [HttpGet]
-        [Route("listProfiles")]
-        [AllowAnonymous]
+        [HttpGet, Route("ListProfiles")]
         public async Task<IHttpActionResult> GetListProfiles()
         {
             try
             {
-                ICollection<Profile> profiles = await _repository.GetAllAsync();
+                ICollection<Profiles> profiles = await _repository.GetAllAsync();
 
+                profiles = profiles.Where(p => p.AccountId != User.Identity.GetUserId()).ToList();
                 return Ok(profiles);
             }
             catch (Exception e)
@@ -100,11 +67,28 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        // POST: api/Profiles
+        #endregion
+
+        #region Authorize ONLY
+        [HttpGet]
+        [Route("getProfileByAccount")]
+        public async Task<IHttpActionResult> GetProfilesByIdAsync()
+        {
+            try
+            {
+                Profiles profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
+                return Ok(profile);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
+        }
+
         [HttpPost]
         [Route("Create")]
-        [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> CreateProfileAsync()
+        [ResponseType(typeof(Profiles))]
+        public async Task<IHttpActionResult> CreateProfilesAsync()
         {
             if (!Request.Content.IsMimeMultipartContent())
             {
@@ -114,44 +98,31 @@ namespace SocialNetwork.api.Controllers
             try
             {
                 var result = await Request.Content.ReadAsMultipartAsync();
-
                 var requestJson = await result.Contents[0].ReadAsStringAsync();
-                var model = JsonConvert.DeserializeObject<Profile>(requestJson);
-
+                Profiles requestProfile = JsonConvert.DeserializeObject<Profiles>(requestJson);
+                requestProfile.AccountId = User.Identity.GetUserId();
                 if (result.Contents.Count > 1)
                 {
-                    model.PictureProfileUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
+                    requestProfile.PictureProfileUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
                 }
-                var accountId = User.Identity.GetUserId();
-                var profile = new Profile()
-                {
-                    FirstName = model.FirstName,
-                    LastName = model.LastName,
-                    BirthDate = model.BirthDate,
-                    PictureProfileUrl = model.PictureProfileUrl,
-                    AccountId = accountId
-                };
 
-                await _repository.CreateAsync(profile);
+                await _repository.CreateAsync(requestProfile);
 
-                return Ok(profile);
+                return Ok(requestProfile);
             }
             catch (Exception e)
             {
                 Console.Write(e.Message);
                 return StatusCode(HttpStatusCode.InternalServerError);
             }
-            
-            
         }
 
-        // PUT: api/Profiles/5
         [HttpPut]
         [Route("Update")]
         [ResponseType(typeof(void))]
-        public async Task<IHttpActionResult> UpdateProfileAsync()
+        public async Task<IHttpActionResult> UpdateProfilesAsync()
         {
-            Profile profile = null;
+            Profiles requestProfile = null;
             try
             {
                 if (!Request.Content.IsMimeMultipartContent())
@@ -161,20 +132,20 @@ namespace SocialNetwork.api.Controllers
                 var result = await Request.Content.ReadAsMultipartAsync();
 
                 var requestJson = await result.Contents[0].ReadAsStringAsync();
-                profile = JsonConvert.DeserializeObject<Profile>(requestJson);
-
+                requestProfile = JsonConvert.DeserializeObject<Profiles>(requestJson);
                 if (result.Contents.Count > 1)
                 {
-                    profile.PictureProfileUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
+                    requestProfile.PictureProfileUrl = await CreateBlobPictureProfilesAsync(result.Contents[1]);
                 }
-                await _repository.UpdateAsync(profile);
 
-                return Ok(profile);
+                await _repository.UpdateAsync(requestProfile);
+
+                return Ok(requestProfile);
             }
             catch (DbUpdateConcurrencyException e)
             {
                 Console.Write(e.Message);
-                if ((profile != null) && _repository.ProfileExists(profile.Id))
+                if ((requestProfile != null) && _repository.ProfileExists(requestProfile.Id))
                 {
                     return StatusCode(HttpStatusCode.Conflict);
                 }
@@ -187,11 +158,10 @@ namespace SocialNetwork.api.Controllers
             
         }
 
-        // DELETE: api/Profiles/5
         [HttpDelete]
         [Route("delete")]
-        [ResponseType(typeof(Profile))]
-        public async Task<IHttpActionResult> DeleteProfileAsync(int id)
+        [ResponseType(typeof(Profiles))]
+        public async Task<IHttpActionResult> DeleteProfilesAsync(int id)
         {
             try
             {
@@ -203,22 +173,22 @@ namespace SocialNetwork.api.Controllers
                 return InternalError(e);
             }
         }
-
+        #endregion
 
         #region controlFriends
         [HttpGet]
         [Route("AddFriend/{id:int}")]
-        [ResponseType(typeof(Profile))]
+        [ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> AddFriendAsync(int id)
         {
             try
             {
                 // Pega o perfil da conta
-                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
+                Profiles profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
 
 
                 // Atraves do request, pega os dados do amigo
-                Profile friend = await _repository.GetByIDAsync(id);
+                Profiles friend = await _repository.GetByIDAsync(id);
 
                 // Adiciona o amigo
                 profile.Following.Add(friend);
@@ -237,17 +207,17 @@ namespace SocialNetwork.api.Controllers
 
         [HttpGet]
         [Route("RemoveFriend/{id:int}")]
-        [ResponseType(typeof(Profile))]
+        [ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> RemoveFriendAsync(int id)
         {
             try
             {
                 // Pega o perfil da conta
-                Profile profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
+                Profiles profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
 
 
                 // Atraves do request, pega os dados do amigo
-                Profile friend = await _repository.GetByIDAsync(id);
+                Profiles friend = await _repository.GetByIDAsync(id);
 
                 // Adiciona o amigo
                 profile.Following.Remove(friend);
@@ -328,8 +298,6 @@ namespace SocialNetwork.api.Controllers
             string ext = Path.GetExtension(fileName);
             return string.Format("{0:10}_{1}{2}", DateTime.Now.Ticks, Guid.NewGuid(), ext);
         }
-
-
         #endregion
     }
 }

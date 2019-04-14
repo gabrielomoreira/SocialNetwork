@@ -3,63 +3,59 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using SocialNetwork.core.Models;
+using SocialNetwork.core.ProfileEntity;
+using SocialNetwork.data.DataContext;
 using SocialNetwork.data.Interfces;
-using SocialNetwork.data.ProfileDataContext;
 
-namespace SocialNetwork.data.Repositories
+namespace SocialNetwork.data.ProfileRepository
 {
-    public class ProfileRepositoryAsync : IRepositoryAsync<Profile>
+    public class ProfilesRepositoryAsync : IRepositoryAsync<Profiles>
     {
-        private DataContext _dataContextAsync;
+        private SocialNetworkDataContext _dataContext;
 
-        public ProfileRepositoryAsync()
+        public ProfilesRepositoryAsync()
         {
-            _dataContextAsync = new DataContext();
+            _dataContext = new SocialNetworkDataContext();
         }
 
-        public async Task CreateAsync(Profile profile)
+        public async Task CreateAsync(Profiles profile)
         {
-            _dataContextAsync.Profiles.Add(profile);
-            await _dataContextAsync.SaveChangesAsync();
+            _dataContext.Profiles.Add(profile);
+            await _dataContext.SaveChangesAsync();
         }
 
         public async Task DeleteAsync(int id)
         {
-            Profile profile = _dataContextAsync.Profiles.Find(id);
+            Profiles profile = _dataContext.Profiles.Find(id);
             if (profile != null)
             {
-                _dataContextAsync.Profiles.Remove(profile);
-                await _dataContextAsync.SaveChangesAsync();
+                _dataContext.Profiles.Remove(profile);
+                await _dataContext.SaveChangesAsync();
             }
         }
 
-        public async Task<ICollection<Profile>> GetAllAsync()
+        public async Task<ICollection<Profiles>> GetAllAsync()
         {
-            ICollection<Profile> profiles = await _dataContextAsync.Profiles.ToListAsync();
-            if (profiles.Count > 0)
-            {
-                return profiles;
-            }
-            return null;
+            ICollection<Profiles> profiles = await _dataContext.Profiles.ToListAsync();
+            return profiles;
         }
 
-        public async Task<Profile> GetByIDAsync(int id)
+        public async Task<Profiles> GetByIDAsync(int id)
         {
-            return await _dataContextAsync.Profiles.FindAsync(id);
+            return await _dataContext.Profiles.FindAsync(id);
         }
 
-        public async Task<Profile> GetByIDAccountAsync(string AccountID)
+        public async Task<Profiles> GetByIDAccountAsync(string AccountID)
         {
-            return await _dataContextAsync.Profiles.Where(p => p.AccountId == AccountID).SingleOrDefaultAsync();
+            return await _dataContext.Profiles.Where(p => p.AccountId == AccountID).SingleOrDefaultAsync();
         }
 
-        public async Task UpdateAsync(Profile profile)
+        public async Task UpdateAsync(Profiles profile)
         {
             try
             {
-                _dataContextAsync.Entry(profile).State = EntityState.Modified;
-                await _dataContextAsync.SaveChangesAsync();
+                _dataContext.Entry(profile).State = EntityState.Modified;
+                await _dataContext.SaveChangesAsync();
             }
             catch (Exception e)
             {
@@ -69,7 +65,7 @@ namespace SocialNetwork.data.Repositories
 
         public bool ProfileExists(int id)
         {
-            return _dataContextAsync.Profiles.Count(profile => profile.Id == id) > 0;
+            return _dataContext.Profiles.Count(profile => profile.Id == id) > 0;
         }
 
        
