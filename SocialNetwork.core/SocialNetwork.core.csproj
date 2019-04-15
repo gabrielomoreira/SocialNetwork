@@ -48,7 +48,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entity\Albuns.cs" />
     <Compile Include="Entity\Pictures.cs" />
     <Compile Include="Entity\Profiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

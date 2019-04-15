@@ -13,6 +13,7 @@ using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
+using SocialNetwork.core.PictureEntity;
 using SocialNetwork.core.ProfileEntity;
 using SocialNetwork.data.ProfileRepository;
 
@@ -155,7 +156,6 @@ namespace SocialNetwork.api.Controllers
             {
                 return InternalError(e);
             }
-            
         }
 
         [HttpDelete]
@@ -235,6 +235,68 @@ namespace SocialNetwork.api.Controllers
         }
         #endregion
 
+        #region add/remove pictures
+        [HttpGet]
+        [Route("AddPicture")]
+        public async Task<IHttpActionResult> AddPictureAsync()
+        {
+            if (!Request.Content.IsMimeMultipartContent())
+            {
+                return BadRequest();
+            }
+            try
+            {
+                // Pega o perfil da conta
+                Profiles profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
+
+                var result = await Request.Content.ReadAsMultipartAsync();
+                var requestJson = await result.Contents[0].ReadAsStringAsync();
+                Pictures requestPicture = JsonConvert.DeserializeObject<Pictures>(requestJson);
+                if (result.Contents.Count > 1)
+                {
+                    requestPicture.PictureUrl = await CreateBlobPicturesAlbumAsync(result.Contents[1]);
+                }
+
+                profile.Album.Add(requestPicture);
+                await _repository.UpdateAsync(profile);
+
+
+                //Retorno se OK
+                return Ok(profile);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
+
+        }
+
+        [HttpGet]
+        [Route("RemovePicture/{id:int}")]
+        [ResponseType(typeof(Profiles))]
+        public async Task<IHttpActionResult> RemovePictureAsync(int id)
+        {
+            try
+            {
+                // Pega o perfil da conta
+                Profiles profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
+
+                // Adiciona o amigo
+                profile.Album.ToList().RemoveAll(picture => picture.Id == id);
+                await _repository.UpdateAsync(profile);
+
+
+                //Retorno se OK
+                return Ok(profile);
+            }
+            catch (Exception e)
+            {
+                return InternalError(e);
+            }
+
+        }
+        #endregion
+
         #region Helpers
         private IHttpActionResult InternalError(Exception e)
         {
@@ -268,11 +330,11 @@ namespace SocialNetwork.api.Controllers
             return blob.Uri.AbsoluteUri;
         }
 
-        private async Task<string> CreateBlobPicturesAsync(HttpContent httpContent)
+        private async Task<string> CreateBlobPicturesAlbumAsync(HttpContent httpContent)
         {
             var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
 
-            var blobContainerName = "sn-pictures";
+            var blobContainerName = "sn-albumpictures";
             var blobClient = storageAccount.CreateCloudBlobClient();
             var blobContainer = blobClient.GetContainerReference(blobContainerName);
             await blobContainer.CreateIfNotExistsAsync();

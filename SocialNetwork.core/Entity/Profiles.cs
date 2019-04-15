@@ -1,4 +1,4 @@
-﻿using SocialNetwork.core.AlbumEntity;
+﻿using SocialNetwork.core.PictureEntity;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
@@ -23,7 +23,7 @@ namespace SocialNetwork.core.ProfileEntity
         public DateTime BirthDate { get; set; }
         public string PictureProfileUrl { get; set; }
 
-        public virtual ICollection<Albuns> Albuns { get; set; }
+        public virtual ICollection<Pictures> Album { get; set; }
         public virtual ICollection<Profiles> Followers { get; set; }
         public virtual ICollection<Profiles> Following { get; set; }
         

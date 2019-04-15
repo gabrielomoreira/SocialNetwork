@@ -421,6 +421,10 @@ namespace SocialNetwork.web.Controllers
         }
         #endregion
 
+        #region album
+
+        #endregion
+
         #region helpers
         private ProfileViewModel BuildProfileViewModel(Profiles profile)
         {

@@ -68,7 +68,6 @@ namespace SocialNetwork.data.ProfileRepository
             return _dataContext.Profiles.Count(profile => profile.Id == id) > 0;
         }
 
-       
     }
 
 }
