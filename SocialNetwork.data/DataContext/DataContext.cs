@@ -26,6 +26,5 @@ namespace SocialNetwork.data.DataContext
             base.OnModelCreating(modelBuilder);
         }
 
-        
     }
 }

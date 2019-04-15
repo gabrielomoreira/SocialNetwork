@@ -70,6 +70,8 @@ namespace SocialNetwork.web.Models.Profile
 
         [Display(Name = "Picture")]
         public string PictureUrl { get; set; }
+
+        public bool PermissionRemove { get; set; }
     }
 
 }

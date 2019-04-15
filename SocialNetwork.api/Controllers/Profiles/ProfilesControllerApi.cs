@@ -13,7 +13,6 @@ using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Blob;
 using Newtonsoft.Json;
-using SocialNetwork.core.PictureEntity;
 using SocialNetwork.core.ProfileEntity;
 using SocialNetwork.data.ProfileRepository;
 
@@ -36,8 +35,7 @@ namespace SocialNetwork.api.Controllers
         }
 
         #region AllowAnonymous and/or Authorize
-        [AllowAnonymous]
-        [HttpGet, Route("getProfile/{id:int}")]
+        [AllowAnonymous, HttpGet, Route("getProfile/{id:int}")]
         public async Task<IHttpActionResult> GetProfiles(int id)
         {
             try
@@ -51,8 +49,7 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        [AllowAnonymous]
-        [HttpGet, Route("ListProfiles")]
+        [AllowAnonymous, HttpGet, Route("ListProfiles")]
         public async Task<IHttpActionResult> GetListProfiles()
         {
             try
@@ -67,12 +64,10 @@ namespace SocialNetwork.api.Controllers
                 return InternalError(e);
             }
         }
-
         #endregion
 
         #region Authorize ONLY
-        [HttpGet]
-        [Route("getProfileByAccount")]
+        [HttpGet, Route("getProfileByAccount")]
         public async Task<IHttpActionResult> GetProfilesByIdAsync()
         {
             try
@@ -86,9 +81,7 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        [HttpPost]
-        [Route("Create")]
-        [ResponseType(typeof(Profiles))]
+        [HttpPost, Route("Create"), ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> CreateProfilesAsync()
         {
             if (!Request.Content.IsMimeMultipartContent())
@@ -118,9 +111,7 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        [HttpPut]
-        [Route("Update")]
-        [ResponseType(typeof(void))]
+        [HttpPut, Route("Update"), ResponseType(typeof(void))]
         public async Task<IHttpActionResult> UpdateProfilesAsync()
         {
             Profiles requestProfile = null;
@@ -158,9 +149,7 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        [HttpDelete]
-        [Route("delete")]
-        [ResponseType(typeof(Profiles))]
+        [HttpDelete, Route("delete"), ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> DeleteProfilesAsync(int id)
         {
             try
@@ -176,9 +165,7 @@ namespace SocialNetwork.api.Controllers
         #endregion
 
         #region controlFriends
-        [HttpGet]
-        [Route("AddFriend/{id:int}")]
-        [ResponseType(typeof(Profiles))]
+        [HttpGet, Route("AddFriend/{id:int}"), ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> AddFriendAsync(int id)
         {
             try
@@ -205,9 +192,7 @@ namespace SocialNetwork.api.Controllers
 
         }
 
-        [HttpGet]
-        [Route("RemoveFriend/{id:int}")]
-        [ResponseType(typeof(Profiles))]
+        [HttpGet, Route("RemoveFriend/{id:int}"), ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> RemoveFriendAsync(int id)
         {
             try
@@ -234,69 +219,7 @@ namespace SocialNetwork.api.Controllers
 
         }
         #endregion
-
-        #region add/remove pictures
-        [HttpGet]
-        [Route("AddPicture")]
-        public async Task<IHttpActionResult> AddPictureAsync()
-        {
-            if (!Request.Content.IsMimeMultipartContent())
-            {
-                return BadRequest();
-            }
-            try
-            {
-                // Pega o perfil da conta
-                Profiles profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
-
-                var result = await Request.Content.ReadAsMultipartAsync();
-                var requestJson = await result.Contents[0].ReadAsStringAsync();
-                Pictures requestPicture = JsonConvert.DeserializeObject<Pictures>(requestJson);
-                if (result.Contents.Count > 1)
-                {
-                    requestPicture.PictureUrl = await CreateBlobPicturesAlbumAsync(result.Contents[1]);
-                }
-
-                profile.Album.Add(requestPicture);
-                await _repository.UpdateAsync(profile);
-
-
-                //Retorno se OK
-                return Ok(profile);
-            }
-            catch (Exception e)
-            {
-                return InternalError(e);
-            }
-
-        }
-
-        [HttpGet]
-        [Route("RemovePicture/{id:int}")]
-        [ResponseType(typeof(Profiles))]
-        public async Task<IHttpActionResult> RemovePictureAsync(int id)
-        {
-            try
-            {
-                // Pega o perfil da conta
-                Profiles profile = await _repository.GetByIDAccountAsync(User.Identity.GetUserId());
-
-                // Adiciona o amigo
-                profile.Album.ToList().RemoveAll(picture => picture.Id == id);
-                await _repository.UpdateAsync(profile);
-
-
-                //Retorno se OK
-                return Ok(profile);
-            }
-            catch (Exception e)
-            {
-                return InternalError(e);
-            }
-
-        }
-        #endregion
-
+        
         #region Helpers
         private IHttpActionResult InternalError(Exception e)
         {
@@ -329,32 +252,7 @@ namespace SocialNetwork.api.Controllers
 
             return blob.Uri.AbsoluteUri;
         }
-
-        private async Task<string> CreateBlobPicturesAlbumAsync(HttpContent httpContent)
-        {
-            var storageAccount = CloudStorageAccount.Parse(CloudConfigurationManager.GetSetting("StorageConnectionString"));
-
-            var blobContainerName = "sn-albumpictures";
-            var blobClient = storageAccount.CreateCloudBlobClient();
-            var blobContainer = blobClient.GetContainerReference(blobContainerName);
-            await blobContainer.CreateIfNotExistsAsync();
-
-            await blobContainer.SetPermissionsAsync(
-                new BlobContainerPermissions
-                {
-                    PublicAccess = BlobContainerPublicAccessType.Blob
-                }
-            );
-
-            var fileName = httpContent.Headers.ContentDisposition.FileName;
-            var byteArray = await httpContent.ReadAsByteArrayAsync();
-
-            var blob = blobContainer.GetBlockBlobReference(GetRandomBlobName(fileName));
-            await blob.UploadFromByteArrayAsync(byteArray, 0, byteArray.Length);
-
-            return blob.Uri.AbsoluteUri;
-        }
-
+        
         private string GetRandomBlobName(string fileName)
         {
             string ext = Path.GetExtension(fileName);

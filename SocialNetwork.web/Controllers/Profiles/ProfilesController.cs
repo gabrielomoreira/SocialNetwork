@@ -117,39 +117,6 @@ namespace SocialNetwork.web.Controllers
                     return RedirectToAction("Error");
                 }
             }
-            /*
-            // Dessa parte em diante precisa estar logado para pegar informações sensíveis
-            using (var client = new HttpClient())
-            {
-                //Se chegar aqui é porque existe um token, portanto, uma conta logada. Logo retorna essa conta
-                client.BaseAddress = UriAccount;
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
-
-                var responseAccountProfile = await client.GetAsync("api/Profiles/getProfileByAccount");
-
-
-                if (!responseAccountProfile.IsSuccessStatusCode)
-                {
-                    throw new Exception(responseAccountProfile.StatusCode.ToString());
-                }
-
-                var responseContentAccountProfile = await responseAccountProfile.Content.ReadAsStringAsync();
-
-                Profiles profileAccount = JsonConvert.DeserializeObject<Profiles>(responseContentAccountProfile);
-
-                // Se o perfil da busca é o mesmo do perfil da conta, redireciona para index
-                if (profileAccount.Id == profileViewModel.Id)
-                {
-                    return RedirectToAction("Index", "Profiles");
-                }
-
-                // verifica se existe um amigo da lista de amigos para retornar se é ou não amigo
-                profileViewModel.IsFriend = profileViewModel.Followers.Where(f => f.Id == profileAccount.Id).Count() == 1;
-
-                return View(profileViewModel);
-            }
-        */
         }
 
         [HttpGet]
@@ -189,15 +156,7 @@ namespace SocialNetwork.web.Controllers
                 {
                     return View(profilesViewModel);
                 }
-                
-            }
-            
-            // Procurar uma maneira mais ortodoxa para simplifcar
-            //Remove perfil da conta da lista (caso esteja logado), uma vez que não faz sentiod retorna-lo
-            using (var client = new HttpClient())
-            {
-                //Se chegar aqui é porque existe um token, portanto, uma conta logada. Logo precisa dessa conta para ser removida
-                client.BaseAddress = UriAccount;
+
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
 
@@ -271,7 +230,6 @@ namespace SocialNetwork.web.Controllers
                     return RedirectToAction("Index", "Profiles");
                 }
             }
-
         }
 
         [HttpGet]
@@ -419,10 +377,6 @@ namespace SocialNetwork.web.Controllers
                 }
             }
         }
-        #endregion
-
-        #region album
-
         #endregion
 
         #region helpers

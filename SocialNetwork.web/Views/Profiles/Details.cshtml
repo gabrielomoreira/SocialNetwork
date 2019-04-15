@@ -14,6 +14,7 @@
             <h3>@Html.DisplayFor(model => model.FirstName) @Html.DisplayFor(model => model.LastName)</h3>
             <h5>@Html.DisplayNameFor(model => model.BirthDate): @Html.DisplayFor(model => model.BirthDate)</h5>
             <h5>Followers: @Model.Followers.Count  |  Following: @Model.Following.Count</h5>
+            <p>@Html.ActionLink("Album", "ListPictures", "Pictures", new { Model.Id }, null )</p>
             @if (Session["access_token"] != null)
             {
                 <div style="margin-top: 10px">
