@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
-using SocialNetwork.core.ProfileEntity;
+using SocialNetwork.core.Entity;
 using SocialNetwork.data.DataContext;
 using SocialNetwork.data.Interfces;
 
-namespace SocialNetwork.data.ProfileRepository
+namespace SocialNetwork.data.Repository
 {
     public class ProfilesRepositoryAsync : IRepositoryAsync<Profiles>
     {
@@ -36,7 +36,7 @@ namespace SocialNetwork.data.ProfileRepository
 
         public async Task<ICollection<Profiles>> GetAllAsync()
         {
-            ICollection<Profiles> profiles = await _dataContext.Profiles.ToListAsync();
+            List<Profiles> profiles = await _dataContext.Profiles.ToListAsync();
             return profiles;
         }
 

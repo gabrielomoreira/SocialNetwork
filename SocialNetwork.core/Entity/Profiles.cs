@@ -1,10 +1,9 @@
-﻿using SocialNetwork.core.PictureEntity;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace SocialNetwork.core.ProfileEntity
+namespace SocialNetwork.core.Entity
 {
     public class Profiles
     {
@@ -24,6 +23,8 @@ namespace SocialNetwork.core.ProfileEntity
         public string PictureProfileUrl { get; set; }
 
         public virtual ICollection<Pictures> Album { get; set; }
+        public virtual ICollection<Posts> Posts { get; set; }
+
         public virtual ICollection<Profiles> Followers { get; set; }
         public virtual ICollection<Profiles> Following { get; set; }
         

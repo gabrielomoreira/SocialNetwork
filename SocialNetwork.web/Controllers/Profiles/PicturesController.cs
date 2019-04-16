@@ -10,8 +10,7 @@ using System.Linq;
 using System.Net;
 using System.Collections.Generic;
 using SocialNetwork.web.Models.Profile;
-using SocialNetwork.core.PictureEntity;
-using SocialNetwork.core.ProfileEntity;
+using SocialNetwork.core.Entity;
 #endregion
 
 namespace SocialNetwork.web.Controllers

@@ -49,6 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entity\Pictures.cs" />
+    <Compile Include="Entity\Posts.cs" />
     <Compile Include="Entity\Profiles.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
