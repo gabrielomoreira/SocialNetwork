@@ -13,6 +13,13 @@ namespace SocialNetwork.web.Models.Profile
             Following = new HashSet<ProfileViewModel>();
         }
 
+        public ProfileViewModel(int idProfile)
+        {
+            Followers = new HashSet<ProfileViewModel>();
+            Following = new HashSet<ProfileViewModel>();
+            Id = idProfile;
+        }
+
         public int Id{ get; set; }
 
         [Required]
@@ -42,6 +49,9 @@ namespace SocialNetwork.web.Models.Profile
 
         public bool IsFriend { get; set; }
 
+        public PostsViewModel Post { get; set; }
+        public ICollection<PostsViewModel> Posts { get; set; }
+
     }
 
     public class AlbumViewModel
@@ -62,6 +72,10 @@ namespace SocialNetwork.web.Models.Profile
 
     public class PictureViewModel
     {
+        public PictureViewModel()
+        {
+            Posts = new HashSet<PostsViewModel>();
+        }
 
         public int Id { get; set; }
 
@@ -71,8 +85,11 @@ namespace SocialNetwork.web.Models.Profile
         [Display(Name = "Picture")]
         public string PictureUrl { get; set; }
 
+        public ProfileViewModel ProfileOwner { get; set;}
+
         public bool PermissionRemove { get; set; }
 
+        public PostsViewModel Post { get; set; }
         public ICollection<PostsViewModel> Posts { get; set; }
     }
 

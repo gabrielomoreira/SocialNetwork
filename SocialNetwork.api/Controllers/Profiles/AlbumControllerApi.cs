@@ -59,7 +59,6 @@ namespace SocialNetwork.api.Controllers
             {
                 // Pega o perfil da conta
                 Profiles profile = await _repositoryProfile.GetByIDAsync(idProfile);
-
                 return Ok(profile.Album);
                 
             }
@@ -76,7 +75,6 @@ namespace SocialNetwork.api.Controllers
             {
                 // Pega o perfil da conta
                 Pictures picture = await _repositoryPictures.GetImage(idImg);
-
                 return Ok(picture);
 
             }
@@ -106,6 +104,8 @@ namespace SocialNetwork.api.Controllers
                 {
                     requestPicture.PictureUrl = await CreateBlobPicturesAlbumAsync(result.Contents[1]);
                 }
+
+                requestPicture.ProfileOwner = await _repositoryProfile.GetByIDAccountAsync(User.Identity.GetUserId());
 
                 profile.Album.Add(requestPicture);
                 await _repositoryProfile.UpdateAsync(profile);
@@ -165,17 +165,23 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    post.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
+                    post.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
+                }
+                else
+                {
+                    post.Picture = null;
                 }
 
-                Pictures picture = await _repositoryPictures.GetImage(id);
                 // Adiciona postagem na imagem
+                Pictures picture = await _repositoryPictures.GetImage(id);
+
+                post.ProfileAuthor = await _repositoryProfile.GetByIDAccountAsync(User.Identity.GetUserId());
+                post.ProfileOwner = picture.ProfileOwner;
+
                 picture.Posts.Add(post);
 
                 await _repositoryPictures.UpdateAsync(picture);
 
-
-                //Retorno se OK
                 return Ok();
             }
             catch (Exception e)
@@ -202,7 +208,7 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    reply.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
+                    reply.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
                 }
                 // Adiciona reply no post
                 Pictures picture  = await _repositoryPictures.GetImage(id);
@@ -225,7 +231,6 @@ namespace SocialNetwork.api.Controllers
         {
             try
             {
-
                 await _repositoryPost.DeletePost(id);
                 return StatusCode(HttpStatusCode.NoContent);
             }

@@ -11,6 +11,8 @@ namespace SocialNetwork.core.Entity
         {
             Followers = new HashSet<Profiles>();
             Following = new HashSet<Profiles>();
+            Album = new HashSet<Pictures>();
+            Posts = new HashSet<Posts>();
         }
 
         [Key]

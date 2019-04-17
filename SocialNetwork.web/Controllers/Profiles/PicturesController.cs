@@ -57,11 +57,7 @@ namespace SocialNetwork.web.Controllers
                 {
                     return RedirectToAction("Error");
                 }
-
-
-
                 return View(albumViewModel);
-
             }
 
         }
@@ -103,8 +99,6 @@ namespace SocialNetwork.web.Controllers
                     Profiles profileAccount = JsonConvert.DeserializeObject<Profiles>(responseContentAccountProfile);
 
                     pictureVM.PermissionRemove = profileAccount.Album.Where(pic => pic.Id == id).Count() >0;
-                    // fim da verificação
-
 
                     return View(pictureVM);
                 }
@@ -169,7 +163,8 @@ namespace SocialNetwork.web.Controllers
             {
                 Id = picture.Id,
                 Description = picture.Description,
-                PictureUrl = picture.PictureUrl
+                PictureUrl = picture.PictureUrl,
+                ProfileOwner = new ProfileViewModel(picture.ProfileOwner.Id)
             };
         }
 
@@ -246,6 +241,46 @@ namespace SocialNetwork.web.Controllers
             }
         }
         
+        [HttpPost]
+        public async Task<ActionResult> AddPost(PictureViewModel model)
+        {
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Login", "Acount");
+            }
+
+            using (var client = new HttpClient())
+            {
+                using (var content = new MultipartFormDataContent())
+                {
+                    client.BaseAddress = UriAccount;
+                    client.DefaultRequestHeaders.Accept.Clear();
+                    client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
+
+                    Posts post = new Posts()
+                    {
+                        Picture = new Pictures()
+                        {
+                            Id = model.Id
+                        },
+                        TextPost = model.Post.TextPost
+
+                    };
+
+                    content.Add(new StringContent(JsonConvert.SerializeObject(post)));
+                    AddContent(content);
+
+                    var response = await client.PostAsync(string.Format("api/AlbumProfile/AddPostsPicture/{0}", model.Id), content);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        return RedirectToAction("Error");
+                    }
+
+                    return RedirectToAction("Index", "Pictures");
+                }
+            }
+        }
 
         #region helpers
         private void AddContent(MultipartFormDataContent content)

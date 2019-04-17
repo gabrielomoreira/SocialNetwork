@@ -241,7 +241,7 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    post.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
+                    post.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
                 }
 
                 // Adiciona postagem no proprietário
@@ -278,7 +278,7 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    reply.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
+                    reply.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
                 }
 
                 // Adiciona reply no post

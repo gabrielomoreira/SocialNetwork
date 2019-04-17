@@ -16,14 +16,27 @@ namespace SocialNetwork.data.DataContext
             return new SocialNetworkDataContext();
         }
 
-        protected override void OnModelCreating(DbModelBuilder modelBuilder)
+        protected override void OnModelCreating(DbModelBuilder builder)
         {
-            modelBuilder.Entity<Profiles>()
+            builder.Entity<Profiles>()
                 .HasMany(m => m.Followers)
                 .WithMany(p => p.Following)
                 .Map(w => w.ToTable("Profiles_Relationships").MapLeftKey("ProfileID").MapRightKey("FollowerID"));
+            
+            builder.Entity<Profiles>()
+                .HasMany(m => m.Posts)
+                .WithRequired(p => p.ProfileOwner);
 
-            base.OnModelCreating(modelBuilder);
+            builder.Entity<Profiles>()
+                .HasMany(m => m.Posts)
+                .WithRequired(p => p.ProfileAuthor);
+
+            builder.Entity<Pictures>()
+               .HasMany(m => m.Posts)
+               .WithRequired(p => p.Picture);
+
+
+            base.OnModelCreating(builder);
         }
 
     }

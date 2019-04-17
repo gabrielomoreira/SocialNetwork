@@ -14,9 +14,6 @@ namespace SocialNetwork.web.Models.Profile
 
         public int Id{ get; set; }
 
-        [Display(Name ="Nome")]
-        public string FirstName { get; set; }
-
         [Display(Name = "Comment")]
         public string TextPost { get; set; }
 
@@ -27,9 +24,14 @@ namespace SocialNetwork.web.Models.Profile
         public DateTime DatePost { get; set; }
 
         [Display(Name = "Imagem post")]
-        public string PictureUrl { get; set; }
+        public PictureViewModel PictureVM { get; set; }
 
         public ICollection<PostsViewModel> Responses { get; set; }
+
+        [Required]
+        public ProfileViewModel ProfileAuthor { get; set; }
+        [Required]
+        public ProfileViewModel ProfileOwner { get; set; }
 
     }
     
