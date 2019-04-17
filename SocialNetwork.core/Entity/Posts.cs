@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,7 +8,6 @@ namespace SocialNetwork.core.Entity
     {
         public Posts()
         {
-            Responses = new HashSet<Posts>();
             DatePost = DateTime.UtcNow;
         }
 
@@ -19,11 +17,7 @@ namespace SocialNetwork.core.Entity
         public string TextPost { get; set; }
         public DateTime DatePost { get; set; }
 
-        public ICollection<Posts> Responses { get; set; }
+        public Profiles ProfileAuthor { get; set; }
 
-        public Pictures Picture { get; set; }
-
-        public virtual Profiles ProfileAuthor { get; set; }
-        public virtual Profiles ProfileOwner { get; set; }
     }
 }

@@ -19,21 +19,9 @@ namespace SocialNetwork.data.DataContext
         protected override void OnModelCreating(DbModelBuilder builder)
         {
             builder.Entity<Profiles>()
-                .HasMany(m => m.Followers)
-                .WithMany(p => p.Following)
-                .Map(w => w.ToTable("Profiles_Relationships").MapLeftKey("ProfileID").MapRightKey("FollowerID"));
-            
-            builder.Entity<Profiles>()
-                .HasMany(m => m.Posts)
-                .WithRequired(p => p.ProfileOwner);
-
-            builder.Entity<Profiles>()
-                .HasMany(m => m.Posts)
-                .WithRequired(p => p.ProfileAuthor);
-
-            builder.Entity<Pictures>()
-               .HasMany(m => m.Posts)
-               .WithRequired(p => p.Picture);
+            .HasMany(m => m.Followers)
+            .WithMany(p => p.Following)
+            .Map(w => w.ToTable("Profiles_Relationships").MapLeftKey("ProfileID").MapRightKey("FollowerID"));
 
 
             base.OnModelCreating(builder);

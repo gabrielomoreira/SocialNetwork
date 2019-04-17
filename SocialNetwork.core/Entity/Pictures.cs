@@ -16,8 +16,8 @@ namespace SocialNetwork.core.Entity
         public int Id { get; set; }
         public string PictureUrl { get; set; }
         public string Description { get; set; }
+        public Profiles ProfileOwner { get; set; }
 
-        public virtual Profiles ProfileOwner { get; set; }
         public virtual ICollection<Posts> Posts { get; set; }
     }
 }

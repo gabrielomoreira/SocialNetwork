@@ -148,7 +148,7 @@ namespace SocialNetwork.api.Controllers
         #endregion
 
         #region posts
-        [HttpPost, Route("AddPostsPicture/{id:int}")]
+        [HttpPost, Route("AddPostPicture/{id:int}")]
         public async Task<IHttpActionResult> AddPostsPictureAsync(int id)
         {
             if (!Request.Content.IsMimeMultipartContent())
@@ -163,23 +163,10 @@ namespace SocialNetwork.api.Controllers
 
                 Posts post = JsonConvert.DeserializeObject<Posts>(requestPost);
 
-                if (result.Contents.Count > 1)
-                {
-                    post.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
-                }
-                else
-                {
-                    post.Picture = null;
-                }
-
-                // Adiciona postagem na imagem
                 Pictures picture = await _repositoryPictures.GetImage(id);
-
                 post.ProfileAuthor = await _repositoryProfile.GetByIDAccountAsync(User.Identity.GetUserId());
-                post.ProfileOwner = picture.ProfileOwner;
 
                 picture.Posts.Add(post);
-
                 await _repositoryPictures.UpdateAsync(picture);
 
                 return Ok();
@@ -191,7 +178,7 @@ namespace SocialNetwork.api.Controllers
 
         }
 
-        [HttpGet, Route("AddPostsReplyPicture/{id:int}")]
+        /*[HttpGet, Route("AddPostsReplyPicture/{id:int}")]
         public async Task<IHttpActionResult> AddPostsPictureReplyAsync(int id)
         {
             if (!Request.Content.IsMimeMultipartContent())
@@ -208,7 +195,7 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    reply.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
+                    reply.PicturePost.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
                 }
                 // Adiciona reply no post
                 Pictures picture  = await _repositoryPictures.GetImage(id);
@@ -224,7 +211,7 @@ namespace SocialNetwork.api.Controllers
                 return InternalError(e);
             }
 
-        }
+        }*/
 
         [HttpDelete, Route("RemovePosts/{id:int}")]
         public async Task<IHttpActionResult> RemovePostsAsync(int id)

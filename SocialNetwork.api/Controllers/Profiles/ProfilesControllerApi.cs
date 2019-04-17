@@ -175,8 +175,6 @@ namespace SocialNetwork.api.Controllers
             {
                 // Pega o perfil da conta
                 Profiles profile = await _repositoryProfile.GetByIDAccountAsync(User.Identity.GetUserId());
-
-
                 // Atraves do request, pega os dados do amigo
                 Profiles friend = await _repositoryProfile.GetByIDAsync(id);
 
@@ -202,8 +200,6 @@ namespace SocialNetwork.api.Controllers
             {
                 // Pega o perfil da conta
                 Profiles profile = await _repositoryProfile.GetByIDAccountAsync(User.Identity.GetUserId());
-
-
                 // Atraves do request, pega os dados do amigo
                 Profiles friend = await _repositoryProfile.GetByIDAsync(id);
 
@@ -239,13 +235,9 @@ namespace SocialNetwork.api.Controllers
 
                 Posts post = JsonConvert.DeserializeObject<Posts>(requestPost);
 
-                if (result.Contents.Count > 1)
-                {
-                    post.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
-                }
 
                 // Adiciona postagem no proprietário
-                Profiles profile = await _repositoryProfile.GetByIDAsync(post.ProfileOwner.Id);
+                Profiles profile = await _repositoryProfile.GetByIDAsync(post.ProfileAuthor.Id);
                 profile.Posts.Add(post);
 
                 await _repositoryProfile.UpdateAsync(profile);
@@ -261,7 +253,7 @@ namespace SocialNetwork.api.Controllers
 
         }
 
-        [HttpGet, Route("AddPostsReply/{id:int}")]
+        /*[HttpGet, Route("AddPostsReply/{id:int}")]
         public async Task<IHttpActionResult> AddPostsReplyAsync(int id)
         {
             if (!Request.Content.IsMimeMultipartContent())
@@ -278,7 +270,7 @@ namespace SocialNetwork.api.Controllers
 
                 if (result.Contents.Count > 1)
                 {
-                    reply.Picture.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
+                    reply.PicturePost.PictureUrl = await CreateBlobPostsPicturesAlbumAsync(result.Contents[1]);
                 }
 
                 // Adiciona reply no post
@@ -296,7 +288,7 @@ namespace SocialNetwork.api.Controllers
                 return InternalError(e);
             }
 
-        }
+        }*/
 
         [HttpDelete, Route("RemovePosts/{id:int}")]
         public async Task<IHttpActionResult> RemovePostsAsync(int id)

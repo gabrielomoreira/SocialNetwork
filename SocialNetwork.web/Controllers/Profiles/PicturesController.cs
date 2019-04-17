@@ -159,13 +159,30 @@ namespace SocialNetwork.web.Controllers
 
         private PictureViewModel BuildPictureViewModel(Pictures picture)
         {
-            return new PictureViewModel()
+            PictureViewModel pictureVM = new PictureViewModel()
             {
                 Id = picture.Id,
                 Description = picture.Description,
-                PictureUrl = picture.PictureUrl,
-                ProfileOwner = new ProfileViewModel(picture.ProfileOwner.Id)
+                PictureUrl = picture.PictureUrl
+
             };
+            foreach(Posts post in picture.Posts)
+            {
+                pictureVM.Posts.Add(new PostsViewModel()
+                {
+                    Id = post.Id,
+                    DatePost = post.DatePost,
+                    TextPost = post.TextPost,
+                    ProfileAuthor = new ProfileViewModel()
+                    {
+                        Id = post.ProfileAuthor.Id,
+                        FirstName = post.ProfileAuthor.FirstName,
+                        LastName = post.ProfileAuthor.LastName
+                    }
+                });
+
+            }
+            return pictureVM;
         }
 
         [HttpGet]
@@ -260,18 +277,14 @@ namespace SocialNetwork.web.Controllers
 
                     Posts post = new Posts()
                     {
-                        Picture = new Pictures()
-                        {
-                            Id = model.Id
-                        },
-                        TextPost = model.Post.TextPost
-
+                        TextPost = model.Post.TextPost,
+                        DatePost = DateTime.UtcNow
                     };
 
                     content.Add(new StringContent(JsonConvert.SerializeObject(post)));
                     AddContent(content);
 
-                    var response = await client.PostAsync(string.Format("api/AlbumProfile/AddPostsPicture/{0}", model.Id), content);
+                    var response = await client.PostAsync(string.Format("api/AlbumProfile/AddPostPicture/{0}", model.Id), content);
                     if (!response.IsSuccessStatusCode)
                     {
                         return RedirectToAction("Error");

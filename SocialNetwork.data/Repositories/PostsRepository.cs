@@ -23,7 +23,7 @@ namespace SocialNetwork.data.Repository
 
         public async Task<ICollection<Posts>> GetAllPostByProfile(int idProfile)
         {
-            return await _dataContext.Posts.Where(p => p.ProfileOwner.Id == idProfile).ToListAsync();
+            return await _dataContext.Posts.Where(p => p.ProfileAuthor.Id == idProfile).ToListAsync();
         }
 
         public async Task<Posts> GetPost(int id)

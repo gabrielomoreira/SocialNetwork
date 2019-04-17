@@ -19,7 +19,7 @@ namespace SocialNetwork.data.Repository
 
         public async Task<Pictures> GetImage(int id)
         {
-            return await _dataContext.Pictures.Where(p => p.Id == id).SingleOrDefaultAsync();
+            return await _dataContext.Pictures.Where(pic => pic.Id == id).Include(prf => prf.ProfileOwner).SingleOrDefaultAsync();
         }
 
         public async Task UpdateAsync(Pictures pictures)
