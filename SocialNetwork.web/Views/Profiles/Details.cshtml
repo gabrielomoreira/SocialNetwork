@@ -21,11 +21,11 @@
             @if (Session["access_token"] != null)
             {
             <div style="margin-top: 10px">
-                @if (Model.IsFriend)
-                {
-                    @Html.ActionLink("Unfollow", "RemoveFriend", new { id = Model.Id }, new { @class = "btn btn-info" })
-                }
                 @if (!Model.IsFriend)
+                {
+                    @Html.ActionLink("Follow", "AddFriend", new { id = Model.Id }, new { @class = "btn btn-info" })
+                }
+                @if (Model.IsFriend)
                 {
                     @Html.ActionLink("Unfollow", "RemoveFriend", new { id = Model.Id }, new { @class = "btn btn-warning" })
                 }

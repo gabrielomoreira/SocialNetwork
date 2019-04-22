@@ -36,7 +36,13 @@ namespace SocialNetwork.data.Repository
 
         public async Task<ICollection<Profiles>> GetAllAsync()
         {
-            List<Profiles> profiles = await _dataContext.Profiles.ToListAsync();
+            List<Profiles> profiles = 
+                await _dataContext.Profiles
+                .Include(p => p.Posts)
+                .Include(p => p.Album)
+                .Include(p => p.Followers)
+                .Include(p => p.Following)
+                .ToListAsync();
             return profiles;
         }
 
