@@ -27,7 +27,7 @@
                         @if (post.TextPost != null)
                         {
                             <div>
-                                <b>@Html.DisplayFor(m => post.ProfileAuthor.FirstName)</b>
+                                <b>@Html.DisplayFor(m => post.ProfileAuthor.FirstName) @Html.DisplayFor(m => post.ProfileAuthor.LastName)</b>
                                 <p>@Html.DisplayFor(m => post.TextPost)</p>
                             </div>
                         }

@@ -24,11 +24,11 @@ namespace SocialNetwork.core.Entity
         public DateTime BirthDate { get; set; }
         public string PictureProfileUrl { get; set; }
 
-        public virtual ICollection<Profiles> Followers { get; set; }
-        public virtual ICollection<Profiles> Following { get; set; }
+        public ICollection<Profiles> Followers { get; set; }
+        public ICollection<Profiles> Following { get; set; }
 
-        public virtual ICollection<Pictures> Album { get; set; }
-        public virtual ICollection<Posts> Posts { get; set; }
+        public ICollection<Pictures> Album { get; set; }
+        public ICollection<Posts> Posts { get; set; }
         
     }
 }

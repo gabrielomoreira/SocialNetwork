@@ -22,6 +22,7 @@ namespace SocialNetwork.data.DataContext
             .HasMany(m => m.Followers)
             .WithMany(p => p.Following)
             .Map(w => w.ToTable("Profiles_Relationships").MapLeftKey("ProfileID").MapRightKey("FollowerID"));
+            
 
 
             base.OnModelCreating(builder);

@@ -226,7 +226,9 @@ namespace SocialNetwork.web.Controllers
                         return RedirectToAction("Error");
                     }
 
-                    return RedirectToAction("Index", "Pictures");
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Pictures picture = JsonConvert.DeserializeObject<Pictures>(responseContent);
+                    return RedirectToAction("Details", "Pictures", new { picture.Id });
                 }
             }
         }
@@ -290,7 +292,10 @@ namespace SocialNetwork.web.Controllers
                         return RedirectToAction("Error");
                     }
 
-                    return RedirectToAction("Index", "Pictures");
+                    var responseContent = await response.Content.ReadAsStringAsync();
+                    Pictures picture = JsonConvert.DeserializeObject<Pictures>(responseContent);
+
+                    return RedirectToAction("Details", "Pictures", new { picture.Id });
                 }
             }
         }

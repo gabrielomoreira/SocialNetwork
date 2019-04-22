@@ -17,7 +17,14 @@ namespace SocialNetwork.core.Entity
         public string TextPost { get; set; }
         public DateTime DatePost { get; set; }
 
-        public Profiles ProfileAuthor { get; set; }
+        [ForeignKey("PictureOwnerId")]
+        public virtual Pictures PictureOwner { get; set; }
+        public int? PictureOwnerId { get; set; }
+
+        [ForeignKey("ProfileAuthorId")]
+        public virtual Profiles ProfileAuthor { get; set; }
+        public int? ProfileAuthorId { get; set; }
+
 
     }
 }

@@ -5,6 +5,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
+using System.Web.Http.Description;
 using Microsoft.AspNet.Identity;
 using Microsoft.Azure;
 using Microsoft.WindowsAzure.Storage;
@@ -85,7 +86,7 @@ namespace SocialNetwork.api.Controllers
         }
 
         #region pictures
-        [HttpPost, Route("AddPicture")]
+        [HttpPost, Route("AddPicture"), ResponseType(typeof(Pictures))]
         public async Task<IHttpActionResult> AddPictureAsync()
         {
             if (!Request.Content.IsMimeMultipartContent())
@@ -112,7 +113,7 @@ namespace SocialNetwork.api.Controllers
 
 
                 //Retorno se OK
-                return Ok(profile);
+                return Ok(requestPicture);
             }
             catch (Exception e)
             {
@@ -148,7 +149,7 @@ namespace SocialNetwork.api.Controllers
         #endregion
 
         #region posts
-        [HttpPost, Route("AddPostPicture/{id:int}")]
+        [HttpPost, Route("AddPostPicture/{id:int}"), ResponseType(typeof(Pictures))]
         public async Task<IHttpActionResult> AddPostsPictureAsync(int id)
         {
             if (!Request.Content.IsMimeMultipartContent())
@@ -164,12 +165,15 @@ namespace SocialNetwork.api.Controllers
                 Posts post = JsonConvert.DeserializeObject<Posts>(requestPost);
 
                 Pictures picture = await _repositoryPictures.GetImage(id);
-                post.ProfileAuthor = await _repositoryProfile.GetByIDAccountAsync(User.Identity.GetUserId());
+                Profiles profileAuthor = await _repositoryProfile.GetByIDAccountAsync(User.Identity.GetUserId());
+                post.ProfileAuthorId = profileAuthor.Id;
+
+                post.PictureOwnerId = picture.Id;
 
                 picture.Posts.Add(post);
                 await _repositoryPictures.UpdateAsync(picture);
 
-                return Ok();
+                return Ok(picture);
             }
             catch (Exception e)
             {

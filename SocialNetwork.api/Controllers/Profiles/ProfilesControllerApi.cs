@@ -114,7 +114,7 @@ namespace SocialNetwork.api.Controllers
             }
         }
 
-        [HttpPut, Route("Update"), ResponseType(typeof(void))]
+        [HttpPut, Route("Update")]
         public async Task<IHttpActionResult> UpdateProfilesAsync()
         {
             Profiles requestProfile = null;
@@ -168,7 +168,7 @@ namespace SocialNetwork.api.Controllers
         #endregion
 
         #region controlFriends
-        [HttpGet, Route("AddFriend/{id:int}"), ResponseType(typeof(Profiles))]
+        [HttpGet, Route("AddFriend/{id:int}")]
         public async Task<IHttpActionResult> AddFriendAsync(int id)
         {
             try
@@ -193,7 +193,7 @@ namespace SocialNetwork.api.Controllers
 
         }
 
-        [HttpGet, Route("RemoveFriend/{id:int}"), ResponseType(typeof(Profiles))]
+        [HttpGet, Route("RemoveFriend/{id:int}")]
         public async Task<IHttpActionResult> RemoveFriendAsync(int id)
         {
             try

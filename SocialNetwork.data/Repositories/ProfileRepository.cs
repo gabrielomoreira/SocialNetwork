@@ -42,12 +42,20 @@ namespace SocialNetwork.data.Repository
 
         public async Task<Profiles> GetByIDAsync(int id)
         {
-            return await _dataContext.Profiles.FindAsync(id);
+            return await _dataContext.Profiles
+                .Where(p => p.Id == id)
+                .Include(p => p.Posts)
+                .Include(p => p.Album)
+                .SingleOrDefaultAsync();
         }
 
         public async Task<Profiles> GetByIDAccountAsync(string AccountID)
         {
-            return await _dataContext.Profiles.Where(p => p.AccountId == AccountID).Include(p => p.Posts).SingleOrDefaultAsync();
+            return await _dataContext.Profiles
+                .Where(p => p.AccountId == AccountID)
+                .Include(p => p.Posts)
+                .Include(p => p.Album)
+                .SingleOrDefaultAsync();
         }
 
         public async Task UpdateAsync(Profiles profile)
