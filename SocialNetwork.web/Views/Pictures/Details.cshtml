@@ -29,6 +29,12 @@
                             <div class="container">
                                 <b>@Html.DisplayFor(m => post.ProfileAuthor.FirstName) @Html.DisplayFor(m => post.ProfileAuthor.LastName)</b>
                                 <p>@Html.DisplayFor(m => post.TextPost)</p>
+                                @if (Model.PermissionRemove)
+                                {
+                                <p class="">
+                                    
+                                </p>
+                                }
                             </div>
                         }
                     </div>

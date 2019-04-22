@@ -98,7 +98,7 @@ namespace SocialNetwork.web.Controllers
 
                     Profiles profileAccount = JsonConvert.DeserializeObject<Profiles>(responseContentAccountProfile);
 
-                    pictureVM.PermissionRemove = profileAccount.Album.Where(pic => pic.Id == id).Count() >0;
+                    pictureVM.PermissionRemove = profileAccount.Album.Where(pic => pic.Id == id).Count() > 0;
 
                     return View(pictureVM);
                 }
@@ -297,6 +297,27 @@ namespace SocialNetwork.web.Controllers
 
                     return RedirectToAction("Details", "Pictures", new { picture.Id });
                 }
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> RemovePost(int id)
+        {
+            string acess_token = Session["access_token"]?.ToString();
+            if (string.IsNullOrEmpty(acess_token))
+            {
+                return RedirectToAction("Login", "Acount");
+            }
+
+            using (var client = new HttpClient())
+            {
+
+                var response = await client.DeleteAsync(string.Format("api/AlbumProfile/RemovePosts/{0}", id));
+                if (!response.IsSuccessStatusCode)
+                {
+                    return RedirectToAction("Error");
+                }
+                return View();
             }
         }
 

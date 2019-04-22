@@ -89,6 +89,9 @@ namespace SocialNetwork.web.Models.Profile
 
         public PostsViewModel Post { get; set; }
         public ICollection<PostsViewModel> Posts { get; set; }
+
+        public ProfileViewModel ProfileUser { get; set; }
+
     }
 
 }
