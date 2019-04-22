@@ -46,6 +46,8 @@ namespace SocialNetwork.data.Repository
                 .Where(p => p.Id == id)
                 .Include(p => p.Posts)
                 .Include(p => p.Album)
+                .Include(p => p.Followers)
+                .Include(p => p.Following)
                 .SingleOrDefaultAsync();
         }
 
@@ -55,6 +57,8 @@ namespace SocialNetwork.data.Repository
                 .Where(p => p.AccountId == AccountID)
                 .Include(p => p.Posts)
                 .Include(p => p.Album)
+                .Include(p => p.Followers)
+                .Include(p => p.Following)
                 .SingleOrDefaultAsync();
         }
 

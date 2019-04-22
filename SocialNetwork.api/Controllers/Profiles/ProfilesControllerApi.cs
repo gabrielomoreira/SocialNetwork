@@ -168,7 +168,7 @@ namespace SocialNetwork.api.Controllers
         #endregion
 
         #region controlFriends
-        [HttpGet, Route("AddFriend/{id:int}")]
+        [HttpGet, Route("AddFriend/{id:int}"), ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> AddFriendAsync(int id)
         {
             try
@@ -193,7 +193,7 @@ namespace SocialNetwork.api.Controllers
 
         }
 
-        [HttpGet, Route("RemoveFriend/{id:int}")]
+        [HttpGet, Route("RemoveFriend/{id:int}"), ResponseType(typeof(Profiles))]
         public async Task<IHttpActionResult> RemoveFriendAsync(int id)
         {
             try

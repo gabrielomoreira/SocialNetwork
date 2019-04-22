@@ -339,7 +339,8 @@ namespace SocialNetwork.web.Controllers
 
                     if (response.IsSuccessStatusCode)
                     {
-                        return RedirectToAction("ListProfiles", "Profiles");
+
+                        return RedirectToAction("Details", "Profiles", new { id });
                     }
                     else
                     {
@@ -367,9 +368,13 @@ namespace SocialNetwork.web.Controllers
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", $"{acess_token}");
 
                 var response = await client.GetAsync(string.Format("api/Profiles/RemoveFriend/{0}", id));
+
+                var responseContent = await response.Content.ReadAsStringAsync();
+                ProfileViewModel profile = JsonConvert.DeserializeObject<ProfileViewModel>(responseContent);
+
                 if (response.IsSuccessStatusCode)
                 {
-                    return RedirectToAction("ListProfiles", "Profiles");
+                    return RedirectToAction("Details", "Profiles", new { id });
                 }
                 else
                 {
