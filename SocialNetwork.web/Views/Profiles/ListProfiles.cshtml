@@ -15,7 +15,6 @@
         <tr>
             <th>@Html.DisplayNameFor(model => model.PictureUrl)</th>
             <th>@Html.DisplayNameFor(model => model.FirstName)</th>
-            <th>@Html.DisplayNameFor(model => model.BirthDate)</th>
             <th></th>
         </tr>
 
@@ -24,7 +23,6 @@
         <tr>
             <td><img src="@Url.Content(item.PictureUrl)" alt="Profile Picture" style="width: 50px; height: 50px; border-radius: 100px;" /></td>
             <td><p>@Html.ActionLink(item.FirstName + " " + item.LastName, "Details", new { item.Id })</p></td>
-            <td><p>@Html.DisplayFor(modelItem => item.BirthDate)</p></td>
             <td>
                 <p>@Html.DisplayFor(modelItem => item.Followers.Count) @Html.DisplayNameFor(model => model.Followers) 
                 | @Html.DisplayFor(modelItem => item.Following.Count) @Html.DisplayNameFor(model => model.Following)</p>
